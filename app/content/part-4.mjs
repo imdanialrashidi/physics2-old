@@ -477,9 +477,9 @@ $$
           steps: [
             { label: 'گام ۱ — مقاومت اولیه', body: String.raw`$R_0 = \rho L/A = 1.7\times10^{-8}\times50/(2\times10^{-6}) \approx 0.43\,\Omega$`},
             { label: 'گام ۲ — دما', body: String.raw`برای مس $\alpha \approx 0.0039\,\text{K}^{-1}$.`},
-            { label: 'گام ۳ — مقاومت داغ', body: String.raw`$R = 0.43[1 + 0.0039\times100] = 0.43\times1.39 \approx 0.59\,\Omega$`},
+            { label: 'گام ۳ — مقاومت داغ', body: String.raw`$R = 0.43[1 + 0.0039\times100] = 0.43\times1.39 = 0.5977 \approx 0.60\,\Omega$`},
           ],
-          answer: { latex: String.raw`R_0 \approx 0.43\,\Omega,\quad R(120^\circ C) \approx 0.59\,\Omega`, body: String.raw`افزایش ~۳۹٪ با گرم شدن $100\,K$.`},
+          answer: { latex: String.raw`R_0 \approx 0.43\,\Omega,\quad R(120^\circ C) \approx 0.60\,\Omega`, body: String.raw`افزایش ~۳۹٪ با گرم شدن $100\,K$.`},
           tip: String.raw`این اثر دلیل سیم‌کشی هیترهای برقی است: سیم داغ مقاومت بیشتری دارد و جریان محدود می‌شود — یک ترمستات طبیعی.`,
         },
       ],

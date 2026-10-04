@@ -15,6 +15,10 @@ From the owner's brief (own words, condensed):
   no "AI landing page" aesthetics.
 - Language: primarily Persian, RTL, proper mathematical typesetting.
 - Delivery: fully static, GitHub Pages compatible, fast, offline-safe, accessible, responsive.
+- Header (2026-10-04, own words): «دکمه همبرگر منو در هدر رو از سمت راست بیار سمت چپ و بهترش بکن» — the
+  menu button belongs at the **left**, i.e. the inline end in RTL, and it should be *better* than the
+  plain hamburger pill it replaced. The placement is the owner's call and is implemented as asked;
+  what "better" became — glyph, wording, sheet, tablet behaviour — is mine, below.
 - Attribution: footer must show `ساخته شده توسط دانیال رشیدی` and `imdanialrashidi.github.io`.
 
 Colors, exact radii, type scale, motion tokens and the two signature elements below are
@@ -107,9 +111,14 @@ rendered at build time, so formulas never reflow after paint and read correctly 
 - Desktop: 1180 px shell; concept pages are content + 288 px sticky sidebar (TOC, prerequisites,
   formula index); hub pages use auto-fill grids.
 - 1080 px: sidebar drops below the article as a three-column support row (article stays first).
-- 880 px: hero stacks with the figure first, nav becomes a single horizontally scrollable row,
-  lesson head drops its emblem column.
-- 560 px: single column, tighter spacing, one-column simulation gallery, quiz options wrap.
+- 880 px: hero stacks with the figure first; the header becomes one compact row and the nav moves
+  into a panel that opens beneath it (see the decision log). The panel is only collapsible when
+  `html.js` is set — without scripting the list simply wraps in place.
+- 1024 px: touch-target floor applies (40 px minimum for map nodes, TOC, breadcrumbs, footer links,
+  inline links and simulation controls). This is deliberately wider than the header breakpoint,
+  because tablets are touched even though the header layout does not change there.
+- 560 px: single column, tighter spacing, one-column simulation gallery, quiz options wrap, the
+  nav toggle drops its label and becomes an icon.
 - Long formulas scroll inside `.math-block` / `.math-inline` instead of pushing the page wide.
 - RTL: `dir="rtl"` on `<html>`, logical properties throughout, Latin runs (`imdanialrashidi.github.io`,
   math, units) isolated with `direction: ltr; unicode-bidi: isolate`.
@@ -125,6 +134,7 @@ rendered at build time, so formulas never reflow after paint and read correctly 
 | simulation | canvas figure | loading, interactive, fallback text | failure keeps the prose fallback |
 | callout | tip, supplement, lost, source | collapsed/expanded | "lost" is always reachable |
 | search dialog | open / empty result / no index | keyboard `/`, Esc, focus return | focus trap while open |
+| menu trigger | labelled (≤880 px) / icon-only (≤560 px) | closed, open, focus, no-JS (absent) | the icon-only form keeps the visible word in `aria-label` |
 | empty state | explorer, formulas, glossary, search | message + recovery hint | never a blank grid |
 | progress panel | stored / storage unavailable | lists both states | says "فقط تا بستن صفحه" when storage fails |
 
@@ -184,3 +194,35 @@ fallback, clipboard), success (copy, quiz score, "این مفهوم تمام ش�
 | 2026-10-03 | Content authored as `.mjs` data, not Markdown-at-runtime | build-time coverage check is the real integrity guarantee | never |
 | 2026-10-03 | Field-ruler grid + charge ribbon as the two signatures | owner asked for "distinctive, not generic"; both are physics-derived, not decorative | if a third motif is introduced, retire one |
 | 2026-10-03 | §6.1 arithmetic slip in the notes shown as a marked correction | re-derived value 5.63×10⁷ N/C; the note's own line is inconsistent | if the owner prefers silent alignment with the note |
+
+### Agent-proposed refinements (2026-10-24) — new, not owner-approved
+
+These keep the two signatures and the notebook thesis intact; they change *proportion and
+interaction*, not the visual idea.
+
+| Area | Refinement | Why | Revisit when |
+|---|---|---|---|
+| Composition → 880 px | **Phone header as one row plus a disclosure panel** (`nav-toggle` + `#site-nav-panel`) instead of a second horizontally scrolling nav row | measured: the old header cost 112 px = 14 % of a 760 px viewport on *every* page, and its nav `scrollWidth` exceeded `clientWidth` by 101 px at 360 px, hiding «واژه‌نامه» with no affordance. Now 60 px (7 %) and nothing clipped | if a bottom-navigation pattern is ever adopted |
+| Header | The trigger only appears once `html.js` is set by the client | a hamburger that cannot open because a chunk failed would hide the whole navigation; without scripting the list stays expanded and reachable | never |
+| States | Current section marked with a 3 px inset edge **and** `aria-current`, not colour alone | DESIGN.md already forbids colour-only state; the panel made it necessary to be explicit | never |
+| Touch targets ≤ 1024 px | Map nodes, TOC, breadcrumbs, footer links, inline links and simulation controls get a 40 px minimum | they measured 22–28 px; on the study map a near-miss silently follows the wrong prerequisite chain | if the map gets its own mobile treatment |
+| Motion | A single interaction block: 1 px `:active` press, 0.12 s colour/transform, `paper-reveal` on open disclosures | the site previously had **no** press feedback and no disabled styling at all | never |
+| Reduced motion | Effects are *removed*, not shortened, under `prefers-reduced-motion` | a 1 ms transform is still a 1 px jump | never |
+| Copy button | `.is-copied` / `.is-failed` states carried by glyph + wording as well as colour | the previous confirmation was text-only with no visual state | never |
+| Simulations | One authoritative `resetControl` per figure (shared, DOM-driven) | 12 of 14 figures had no way back to their starting state | never |
+
+### Agent-proposed refinements (2026-10-04, phone menu trigger) — new, not owner-approved
+
+Raised by the owner's «بهترش بکن» on the menu button. Placement is the owner's; everything else here is
+mine and can be reverted independently. Measured numbers come from the built site in Chromium.
+
+| Area | Refinement | Why | Revisit when |
+|---|---|---|---|
+| Header → placement (**owner**) | The trigger is the last child of `.header-inner`, and `.header-actions` takes `margin-inline-start: auto`, so the trigger sits on the row's inline-end edge — the left in RTL — with the search and progress pills grouped beside it | asked for. Measured before: the trigger was the first child, i.e. the right edge. Being *last* is not enough: with the free space left over, it floated in front of dead paper. Now `toggle.left == row content edge` at 360, 390, 560, 700, 820 and 880 px | if the site ever ships an LTR mirror |
+| Glyph | Field lines with a double-headed axis between them — the part-badge field motif at menu scale — swapping to a `×` when open | arrowheads on all three lines were rendered and rejected on inspection: at 20 px they collapsed into a blob. One axis stays a legible three-line menu and is this product's own motif | if a third menu-shaped control appears |
+| Open/closed wording | The label swaps «فهرست» ↔ «بستن», and `aria-label` always equals the visible word | below 560 px the label is hidden, so the state would otherwise live in a shape and a colour alone; DESIGN already forbids colour-only state | never |
+| Open state surface | `--paper-3` fill with a `--primary-ink` border and ink, 140 ms cross-fade on the glyph | matches the paper language of the sheet it opens; measured 10.79:1 for the open label | never |
+| Panel | The open nav is a lifted sheet — `--paper-2`, 1.5 px `--line`, `--radius`, `--shadow-2`, internal scroll, `paper-reveal` — not six pills on the bar's own colour | the old panel was visually indistinguishable from the header background, the generic look DESIGN's anti-template rule forbids | if the panel ever becomes a full-screen drawer |
+| Composition → 561–880 px | The sheet leaves the flow and hangs from the trigger, anchored to its inline-end edge, max 320 px wide | measured: the push-down sheet cost a tablet 377 px of header — 42 % of a 900 px viewport — to list six words. The header now stays 60 px. Below 561 px it still pushes, which is the thumb-reachable pattern DESIGN accepted for phones | if a tablet-specific nav is designed |
+| Current-section marker | A 3 px bar element on the row's reading-start edge plus the `--paper-3` fill, never colour alone | as an inset shadow the marker was clipped by the pill's 999 px radius into a crescent floating beside the row instead of an edge on it | never |
+| Tap outside | A `pointerdown` outside the header closes the sheet and leaves focus where the learner put it | on a tablet the sheet floats over content, so a stray tap would otherwise leave a sheet hanging over the page | never |

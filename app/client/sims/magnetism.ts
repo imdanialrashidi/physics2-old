@@ -12,7 +12,7 @@ import {
   wireForce,
 } from '../../physics/magnetism.ts';
 import { createLoop, fa, fmt, prefersReducedMotion } from '../dom.ts';
-import { arrow, button, clear, createStage, grid, label, plotCurve, plotFrame, readoutList, segmented, slider } from './kit.ts';
+import { arrow, button, clear, createStage, grid, label, plotCurve, plotFrame, readoutList, resetControl, segmented, slider } from './kit.ts';
 
 const MAGENTA = '#d2266f';
 const TEAL = '#0e8f80';
@@ -36,6 +36,7 @@ export function mountMagneticMotion(host: HTMLElement): void {
 
   const paint = () => {
     clear(stage);
+    readout.clear();
     grid(stage, 24, true);
     const { context, origin } = stage;
     // field band (into/out of the page shown as ⊗ markers)
@@ -110,12 +111,18 @@ export function mountMagneticMotion(host: HTMLElement): void {
   });
   loop.start();
 
-  button(panel, { label: 'بازنشانی مسیر', onClick: () => { state.t = 0; trail.length = 0; paint(); } });
   slider(panel, { label: 'اندازه‌ی بار |q|', min: 1, max: 5, step: 0.5, value: 1.602, unit: '×۱۰⁻¹⁹ C', onInput: (value) => { state.q = value * 1e-19; paint(); } });
   slider(panel, { label: 'جرم m', min: 0.5, max: 3, step: 0.1, value: 9.109, unit: '×۱۰⁻³¹ kg', format: (value) => `${fmt(value, 4)}×۱۰⁻³¹`, onInput: (value) => { state.mass = value * 1e-31; paint(); } });
   slider(panel, { label: 'سرعت v', min: 0.2, max: 4, step: 0.2, value: 1, unit: '×۱۰⁶ m/s', format: (value) => `${fmt(value, 3)}×۱۰⁶`, onInput: (value) => { state.v = value * 1e6; paint(); } });
   slider(panel, { label: 'زاویه‌ی θ با میدان', min: 0, max: 90, step: 1, value: 45, unit: '°', onInput: (value) => { state.theta = value; paint(); } });
   slider(panel, { label: 'میدان B', min: 0.05, max: 2, step: 0.05, value: state.field, unit: 'T', onInput: (value) => { state.field = value; paint(); } });
+  // One reset that restores the parameters and clears the drawn trail, so there is a single
+  // unambiguous way back to the start of the motion.
+  resetControl(panel, paint, 'بازنشانی', () => {
+    state.t = 0;
+    trail.length = 0;
+    paint();
+  });
   paint();
 }
 
@@ -130,6 +137,7 @@ export function mountWireTorque(host: HTMLElement): void {
 
   const paint = () => {
     clear(stage);
+    readout.clear();
     grid(stage, 24, true);
     const { context, origin } = stage;
     context.fillStyle = 'rgba(210,38,111,0.05)';
@@ -203,6 +211,7 @@ export function mountWireTorque(host: HTMLElement): void {
     phase += delta;
     paint();
   }).start();
+  resetControl(panel, paint);
   paint();
 }
 
@@ -216,6 +225,7 @@ export function mountBFieldLab(host: HTMLElement): void {
 
   const paint = () => {
     clear(stage);
+    readout.clear();
     grid(stage, 24, true);
     const { context, origin } = stage;
 
@@ -349,5 +359,6 @@ export function mountBFieldLab(host: HTMLElement): void {
   slider(panel, { label: 'شعاع حلقه R', min: 0.03, max: 0.2, step: 0.01, value: state.radius, unit: 'm', onInput: (value) => { state.radius = value; paint(); } });
   slider(panel, { label: 'تعداد دور N', min: 20, max: 500, step: 20, value: state.turns, onInput: (value) => { state.turns = value; paint(); } });
   slider(panel, { label: 'طول سلونوئید L', min: 0.05, max: 0.6, step: 0.01, value: state.length, unit: 'm', onInput: (value) => { state.length = value; paint(); } });
+  resetControl(panel, paint);
   paint();
 }

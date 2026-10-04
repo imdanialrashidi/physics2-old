@@ -20,7 +20,7 @@ import {
 } from '../../physics/potential.ts';
 import { EPSILON_0 } from '../../physics/constants.ts';
 import { createLoop, fa, fmt, prefersReducedMotion } from '../dom.ts';
-import { arrow, button, clear, createStage, grid, label, plotCurve, plotFrame, readoutList, segmented, slider } from './kit.ts';
+import { arrow, button, clear, createStage, grid, label, plotCurve, plotFrame, readoutList, resetControl, segmented, slider } from './kit.ts';
 
 const controlHost = (stage: HTMLElement): HTMLElement => {
   const host = stage.closest('.sim-tile, .sim-figure, .sim') ?? stage;
@@ -41,6 +41,7 @@ export function mountDriftLab(host: HTMLElement): void {
 
   const paint = () => {
     clear(stage);
+    readout.clear();
     grid(stage, 24, true);
     const { context } = stage;
     // conductor body
@@ -79,7 +80,9 @@ export function mountDriftLab(host: HTMLElement): void {
     readout.set('J = nqv_d', `${fmt(state.n / 1e28, 3)}×۱۰²۸ · q · ${fmt(vDrift * 1e6, 3)}×۱۰⁻⁶ = ${fmt(j / 1e6, 3)}×۱۰⁶`);
   };
 
-  slider(panel, { label: 'چگالی حامل‌ها n', min: 1, max: 30, step: 1, value: 8.5, unit: '×۱۰²⁸ m⁻³', onInput: (value) => { state.n = value * 1e28; paint(); } });
+  // step 0.5 so 8.5 is actually representable: with step 1 the browser snaps the default to 9 and
+  // the figure silently starts from a different carrier density than its state declares.
+  slider(panel, { label: 'چگالی حامل‌ها n', min: 1, max: 30, step: 0.5, value: 8.5, unit: '×۱۰²⁸ m⁻³', onInput: (value) => { state.n = value * 1e28; paint(); } });
   slider(panel, { label: 'سطح مقطع A', min: 0.5, max: 6, step: 0.5, value: 2, unit: 'mm²', onInput: (value) => { state.area = value * 1e-6; paint(); } });
   slider(panel, { label: 'ولتاژ دو سر سیم', min: 0.001, max: 0.2, step: 0.001, value: state.voltage, unit: 'V', format: (value) => `${fa(value)} V`, onInput: (value) => { state.voltage = value; paint(); } });
   slider(panel, { label: 'مقاومت ویژه ρ', min: 1e-8, max: 5e-8, step: 1e-9, value: state.rho, unit: 'Ω·m', format: (value) => `${fmt(value * 1e8, 3)}×۱۰⁻⁸`, onInput: (value) => { state.rho = value; paint(); } });
@@ -88,6 +91,7 @@ export function mountDriftLab(host: HTMLElement): void {
     paint();
   });
   loop.start();
+  resetControl(panel, paint);
   paint();
 }
 
@@ -104,6 +108,7 @@ export function mountCircuitLab(host: HTMLElement): void {
 
   const paint = () => {
     clear(stage);
+    readout.clear();
     grid(stage, 24, true);
     const { context } = stage;
     const values = [adjusted(state.r1), adjusted(state.r2), adjusted(state.r3)];
@@ -200,6 +205,7 @@ export function mountCircuitLab(host: HTMLElement): void {
     phase += delta;
     paint();
   }).start();
+  resetControl(panel, paint);
   paint();
 }
 
@@ -214,6 +220,7 @@ export function mountRcLab(host: HTMLElement): void {
 
   const paint = () => {
     clear(stage);
+    readout.clear();
     grid(stage, 24, true);
     const tau = state.r * state.c * 1e-3;
     const charging = rcCharging(tau, state.c * 1e-6, state.emf, state.t);
@@ -331,7 +338,12 @@ export function mountRcLab(host: HTMLElement): void {
   slider(panel, { label: 'خازن C', min: 1, max: 100, step: 1, value: state.c, unit: 'µF', onInput: (value) => { state.c = value; paint(); } });
   slider(panel, { label: 'ولتاژ باتری ε', min: 3, max: 24, step: 1, value: state.emf, unit: 'V', onInput: (value) => { state.emf = value; paint(); } });
   button(panel, { label: 'نمایش/توقف', onClick: () => { state.playing = !state.playing; if (state.playing) loop.start(); else loop.stop(); } });
-  button(panel, { label: 'بازنشانی', onClick: () => { state.t = 0; paint(); } });
+  // One reset, not two: it restores R, C and ε and rewinds the clock, so the learner has a single
+  // unambiguous way back to the start of the experiment.
+  resetControl(panel, paint, 'بازنشانی', () => {
+    state.t = 0;
+    paint();
+  });
   paint();
 }
 
@@ -345,6 +357,7 @@ export function mountCapacitorLab(host: HTMLElement): void {
 
   const paint = () => {
     clear(stage);
+    readout.clear();
     grid(stage, 24, true);
     const { context, origin } = stage;
     const gap = Math.max(26, Math.min(150, (state.separation / 0.02) * 150));
@@ -422,6 +435,7 @@ export function mountCapacitorLab(host: HTMLElement): void {
   slider(panel, { label: 'C₁', min: 0.5, max: 10, step: 0.5, value: state.c1, unit: 'µF', onInput: (value) => { state.c1 = value; paint(); } });
   slider(panel, { label: 'C₂', min: 0.5, max: 10, step: 0.5, value: state.c2, unit: 'µF', onInput: (value) => { state.c2 = value; paint(); } });
   slider(panel, { label: 'C₃', min: 0.5, max: 10, step: 0.5, value: state.c3, unit: 'µF', onInput: (value) => { state.c3 = value; paint(); } });
+  resetControl(panel, paint);
   paint();
 }
 

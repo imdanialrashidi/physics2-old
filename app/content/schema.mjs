@@ -72,7 +72,7 @@ export const PARTS = [
  * @property {string[]} prereqs concept ids
  * @property {string[]} keywords
  * @property {string} intuition Layer A
- * @property {{ sim?: string, caption: string, fallback: string, controls?: string[] }} visual Layer B
+ * @property {{ sim?: string, caption: string, fallback: string, controls?: string[], extra?: { sim: string, caption: string, fallback?: string }[] }} visual Layer B
  * @property {Formula[]} formulas Layer C
  * @property {string} [mathNote]
  * @property {WorkedExample[]} examples Layer D

@@ -173,14 +173,22 @@ function initCopyButtons() {
     button.addEventListener('click', async () => {
       const card = button.closest<HTMLElement>('[data-formula]');
       const latex = card?.dataset.latex ?? '';
+      const original = button.textContent ?? 'کپی';
       try {
         await navigator.clipboard.writeText(latex);
         button.textContent = 'کپی شد ✓';
+        // The state is carried by the glyph and the wording as well as the colour, so it survives a
+        // greyscale rendering or a colour-vision difference.
+        button.classList.add('is-copied');
         announce('فرمول کپی شد.');
       } catch {
         button.textContent = 'کپی ناموفق';
+        button.classList.add('is-failed');
       }
-      window.setTimeout(() => (button.textContent = 'کپی'), 1600);
+      window.setTimeout(() => {
+        button.textContent = original;
+        button.classList.remove('is-copied', 'is-failed');
+      }, 1600);
     });
   }
 }
@@ -212,7 +220,87 @@ async function initHomeExtras() {
   nextCard(nextSlot, data.nextConceptId ?? null);
 }
 
+/**
+ * Mobile navigation.
+ *
+ * The nav ships expanded and fully usable; only once scripting is confirmed does it become a
+ * collapsible panel. That ordering matters: a menu button that cannot open because a chunk failed to
+ * load would hide the entire navigation.
+ */
+function initNav(): void {
+  const toggle = q<HTMLButtonElement>('[data-nav-toggle]');
+  const panel = q<HTMLElement>('#site-nav-panel');
+  if (!toggle || !panel) return;
+  const label = q<HTMLElement>('[data-nav-label]');
+
+  document.documentElement.classList.add('js');
+
+  const desktop = window.matchMedia('(min-width: 881px)');
+  /** Open and closed are named, not just coloured: the button says which one it is right now. */
+  const word = (open: boolean): string => (open ? 'بستن' : 'فهرست');
+  const paint = (open: boolean): void => {
+    if (label) label.textContent = word(open);
+    // The accessible name tracks the visible word, which `display: none` drops below 560 px.
+    toggle.setAttribute('aria-label', word(open));
+  };
+  const setOpen = (open: boolean): void => {
+    panel.hidden = !open;
+    toggle.setAttribute('aria-expanded', String(open));
+    paint(open);
+  };
+
+  // Collapsed by default on phones, always visible from 881 px up.
+  const sync = (): void => {
+    if (desktop.matches) {
+      panel.hidden = false;
+      toggle.setAttribute('aria-expanded', 'false');
+      paint(false);
+      return;
+    }
+    setOpen(false);
+  };
+  sync();
+  desktop.addEventListener('change', sync);
+
+  toggle.addEventListener('click', () => setOpen(panel.hidden === true));
+
+  // Close after navigating, and on Escape — focus returns to the trigger so keyboard users are not
+  // dropped at the top of the document.
+  panel.addEventListener('click', (event) => {
+    if ((event.target as HTMLElement).closest('a')) {
+      setOpen(false);
+      toggle.focus();
+    }
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape' || panel.hidden || desktop.matches) return;
+    setOpen(false);
+    toggle.focus();
+  });
+
+  // A tap anywhere outside the header closes the sheet. Focus is deliberately left where the
+  // learner put it — the point of the tap is the thing they tapped, not the menu.
+  document.addEventListener('pointerdown', (event) => {
+    if (panel.hidden || desktop.matches) return;
+    const target = event.target as Node | null;
+    if (target && (toggle.contains(target) || panel.contains(target))) return;
+    setOpen(false);
+  });
+
+  // Collapse the panel when focus leaves the header entirely, so tabbing past it does not leave an
+  // invisible expanded region behind.
+  document.addEventListener('focusout', (event) => {
+    if (panel.hidden || desktop.matches) return;
+    const next = (event as FocusEvent).relatedTarget as Node | null;
+    if (next && panel.contains(next)) return;
+    if (next && toggle.contains(next)) return;
+    setOpen(false);
+  });
+}
+
 function main(): void {
+  document.documentElement.classList.add('js');
+  initNav();
   initProgressPanel();
   initCompleteButtons();
   initBookmarks();
@@ -237,8 +325,10 @@ function main(): void {
     const { mountSimulations } = await import('./sims/index.ts');
     if (data.page === 'sims') {
       for (const id of data.sims ?? []) await mountSimulations(id);
-    } else if (data.sim) {
-      await mountSimulations(data.sim);
+    } else {
+      // A concept page may carry a primary figure plus compact extras; mount every one of them.
+      const ids: string[] = data.sims?.length ? data.sims : data.sim ? [data.sim] : [];
+      for (const id of ids) await mountSimulations(id);
     }
     const { initWeakAreas } = await import('./ui/weak.ts');
     initWeakAreas(data);

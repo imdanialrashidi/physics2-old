@@ -33,7 +33,7 @@ const measure = (selector: string) => {
     return 0.2126 * r + 0.7152 * g + 0.0722 * b;
   };
   const parse = (value: string) => {
-    const numbers = (value.match(/[\\d.]+/g) ?? []).map(Number);
+    const numbers = (value.match(/[\d.]+/g) ?? []).map(Number);
     if (value.startsWith('color(')) return numbers.slice(0, 3).map((n) => n * 255);
     return numbers.slice(0, 3);
   };
@@ -41,7 +41,7 @@ const measure = (selector: string) => {
     let node: Element | null = el;
     while (node) {
       const value = getComputedStyle(node).backgroundColor;
-      if (value && !/rgba\\(0, 0, 0, 0\\)|transparent/.test(value)) return parse(value);
+      if (value && !/rgba\(0, 0, 0, 0\)|transparent/.test(value)) return parse(value);
       node = node.parentElement;
     }
     return [255, 255, 255];
@@ -77,5 +77,41 @@ test('every text role meets WCAG 2.2 AA contrast', async ({ page }) => {
       failures.push(`${name}: ${measured.ratio}:1 is below the required ${measured.required}:1 at ${measured.size}px`);
     }
   }
+  expect(failures, failures.join('\n')).toEqual([]);
+});
+
+/**
+ * The phone menu trigger is the one header control that repaints itself when its state changes: open,
+ * it swaps to a tinted fill with darker ink, and the sheet below it adds a marked row for the current
+ * section. Those pairs only exist in the phone layout, so they are measured there and in both states.
+ */
+test('the phone menu trigger and its sheet meet contrast in both states', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 780 });
+  await page.goto('formulas/');
+  await page.locator('body[data-app-ready="true"]').waitFor();
+
+  const failures: string[] = [];
+  const check = async (name: string, selector: string) => {
+    const measured = await page.evaluate(measure, selector);
+    if (!measured) {
+      failures.push(`${name}: ${selector} was not painted`);
+      return;
+    }
+    if (measured.ratio < measured.required) {
+      failures.push(`${name}: ${measured.ratio}:1 is below the required ${measured.required}:1 at ${measured.size}px`);
+    }
+  };
+
+  await check('closed menu trigger', '[data-nav-toggle]');
+  await page.locator('[data-nav-toggle]').click();
+  // The open state swaps background colour over 120 ms; measuring mid-transition would read an
+  // interpolated colour, so the measurement waits for the transition that is actually running.
+  await page.evaluate(async () => {
+    const toggle = document.querySelector('[data-nav-toggle]')!;
+    await Promise.all(toggle.getAnimations().map((animation) => animation.finished.catch(() => {})));
+  });
+  await check('open menu trigger', '[data-nav-toggle]');
+  await check('current section in the sheet', '#site-nav-panel .nav-link.is-active');
+
   expect(failures, failures.join('\n')).toEqual([]);
 });

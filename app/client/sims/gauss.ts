@@ -2,7 +2,7 @@
 import { EPSILON_0 } from '../../physics/constants.ts';
 import { fieldOfPlane, fieldOfWire, sphereField } from '../../physics/gauss.ts';
 import { fmt } from '../dom.ts';
-import { arrow, chargeDot, clear, createStage, grid, label, readoutList, segmented, slider } from './kit.ts';
+import { arrow, chargeDot, clear, createStage, grid, label, readoutList, resetControl, segmented, slider } from './kit.ts';
 
 type Preset = 'sphere' | 'wire' | 'plane' | 'ring';
 
@@ -16,6 +16,7 @@ export function mountGaussLab(host: HTMLElement): void {
 
   const paint = () => {
     clear(stage);
+    readout.clear();
     grid(stage, 24, true);
     const { context, origin } = stage;
 
@@ -176,7 +177,10 @@ export function mountGaussLab(host: HTMLElement): void {
     },
   });
   slider(panel, { label: 'بار کل', min: 0.5, max: 8, step: 0.5, value: state.totalCharge, unit: 'µC', onInput: (value) => { state.totalCharge = value; paint(); } });
-  slider(panel, { label: 'شعاع کره / فاصله‌ی سطح گاوسی', min: 0.1, max: 1, step: 0.02, value: state.surfaceRadius, unit: 'm', onInput: (value) => { state.surfaceRadius = value; paint(); } });
+  // step 0.05 keeps the mounted 0.35 representable; with step 0.02 the browser snapped it to a
+  // different radius, so the figure started from a state its own control did not describe.
+  slider(panel, { label: 'شعاع کره / فاصله‌ی سطح گاوسی', min: 0.1, max: 1, step: 0.05, value: state.surfaceRadius, unit: 'm', onInput: (value) => { state.surfaceRadius = value; paint(); } });
   slider(panel, { label: 'فاصله‌ی نقطه (حلقه)', min: 0, max: 1, step: 0.05, value: state.radius, unit: 'm', onInput: (value) => { state.radius = value; paint(); } });
+  resetControl(panel, paint);
   paint();
 }
