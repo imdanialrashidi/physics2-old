@@ -27,6 +27,12 @@ jobs:
         with:
           node-version: 22.23.2
 
+      # `scripts/verify.sh` runs this project's real `project-verify.sh`, which needs the pinned
+      # toolchain. Without this step `npx tsc` resolves the unrelated deprecated `tsc@2.0.4`
+      # placeholder package and the job fails with "This is not the tsc command you are looking for".
+      - name: Install dependencies
+        run: npm ci
+
       - name: Validate template
         run: bash scripts/verify.sh
 
