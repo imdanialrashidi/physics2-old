@@ -93,13 +93,13 @@ export const questions = [
     concepts: ['electric-field', 'point-charge-field'],
     prompt: String.raw`میدان الکتریکی در نقطه‌ای از فضا $2000\,N/C$ است. نیروی وارد بر بار آزمایشی $q_0=3\times10^{-6}\,C$ چقدر است؟`,
     options: [
-      { id: 'a', text: String.raw`$6\times10^{-9}\,N$ در جهت میدان` },
+      { id: 'a', text: String.raw`$6\times10^{-3}\,N$ در جهت میدان` },
       { id: 'b', text: String.raw`$666\,N$ در جهت میدان` },
       { id: 'c', text: String.raw`$6\times10^{-3}\,N$ در خلاف جهت میدان` },
-      { id: 'd', text: String.raw`$6\times10^{-9}\,N$ در خلاف جهت میدان` },
+      { id: 'd', text: String.raw`$6\times10^{-9}\,N$ در جهت میدان` },
     ],
     answer: 'a',
-    explain: String.raw`$\vec F = q_0\vec E$ پس $F = 3\times10^{-6}\times2000 = 6\times10^{-9}\,N$. چون بار آزمایشی **مثبت** است، نیرو هم‌جهت میدان است. اگر بار آزمایشی منفی بود، نیرو خلاف جهت میدان می‌شد.`,
+    explain: String.raw`$\vec F = q_0\vec E$ پس $F = 3\times10^{-6}\times2000 = 6\times10^{-3}\,N$. چون بار آزمایشی **مثبت** است، نیرو هم‌جهت میدان است. اگر بار آزمایشی منفی بود، نیرو خلاف جهت میدان می‌شد.`,
   }),
   validateQuestion({
     id: 'p1-field-2',

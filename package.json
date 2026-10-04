@@ -12,8 +12,10 @@
     "coverage": "node app/build/build.mjs --coverage-only",
     "preview": "node app/build/serve.mjs",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/site/physics.test.ts tests/site/content-integrity.test.mjs tests/site/math-render.test.mjs",
-    "ci": "npm run typecheck && npm run test && npm run build"
+    "test": "node --test tests/site/physics.test.ts tests/site/content-integrity.test.mjs tests/site/math-render.test.mjs tests/site/content-numeric.test.mjs",
+    "ci": "npm run typecheck && npm run test && npm run build && npm run test:consistency",
+    "test:consistency": "node --test tests/site/internal-consistency.test.mjs",
+    "audit:numbers": "node app/build/numeric-audit.mjs"
   },
   "dependencies": {
     "@fontsource-variable/vazirmatn": "5.3.0",

@@ -16,6 +16,8 @@ const REGISTRY: Record<string, () => Promise<Mount>> = {
   'magnetic-motion': async () => (await import('./magnetism.ts')).mountMagneticMotion,
   'wire-torque': async () => (await import('./magnetism.ts')).mountWireTorque,
   'b-field-lab': async () => (await import('./magnetism.ts')).mountBFieldLab,
+  'vector-trainer': async () => (await import('./vector-trainer.ts')).mountVectorTrainer,
+  'hand-rule-trainer': async () => (await import('./right-hand-rule.ts')).mountRightHandRule,
 };
 
 export async function mountSimulations(simId: string | null): Promise<void> {

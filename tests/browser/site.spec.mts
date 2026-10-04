@@ -195,6 +195,135 @@ test('no horizontal overflow at narrow width and math stays readable', async ({ 
   expect(mathDir).toBe('ltr');
 });
 
+/**
+ * Phone-first header.
+ *
+ * The previous header spent 112 px — 14% of a 760 px viewport — on every page and scrolled its nav
+ * horizontally, leaving «واژه‌نامه» off-screen with no affordance. These assertions pin the measured
+ * targets rather than the intention: a compact header, nothing clipped, reachable controls, and a
+ * navigation drawer that behaves correctly for pointer and keyboard alike.
+ */
+const PHONE_WIDTHS = [360, 390, 430];
+const ROUTES = ['/', '/concept/electric-field/', '/formulas/', '/practice/mixed/', '/sims/', '/map/', '/does-not-exist/'];
+
+test('the header stays compact and the navigation is never clipped on a phone', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 760 });
+  for (const route of ROUTES) {
+    await open(page, route);
+    const metrics = await page.evaluate(() => {
+      const header = document.querySelector('.site-header');
+      const nav = document.querySelector('.site-nav');
+      const box = header?.getBoundingClientRect();
+      return {
+        headerHeight: box ? box.height : 0,
+        viewport: window.innerHeight,
+        navScroll: nav?.scrollWidth ?? 0,
+        navClient: nav?.clientWidth ?? 0,
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      };
+    });
+    const where = `${route} at 360px`;
+    expect(metrics.overflow, `${where} overflows horizontally`).toBeLessThanOrEqual(1);
+    // The old layout used 112 px. A compact one-row header should stay well under a tenth of the screen.
+    expect(metrics.headerHeight, `${where} header is ${metrics.headerHeight}px`).toBeLessThanOrEqual(72);
+    expect(metrics.headerHeight / metrics.viewport, `${where} header share`).toBeLessThan(0.1);
+    // Collapsed, the panel is hidden; open, it must fit without clipping.
+    for (const open of [false, true]) {
+      if (open) await page.locator('[data-nav-toggle]').click();
+      const nav = await page.evaluate(() => {
+        const node = document.querySelector('.site-nav');
+        return { scroll: node?.scrollWidth ?? 0, client: node?.clientWidth ?? 0 };
+      });
+      expect(nav.scroll, `${where} nav clipped when ${open ? 'open' : 'closed'}`).toBeLessThanOrEqual(nav.client + 1);
+      if (open) await page.locator('[data-nav-toggle]').click();
+    }
+  }
+});
+
+test('every required width keeps controls thumb-sized and content unclipped', async ({ page }) => {
+  for (const width of [...PHONE_WIDTHS, 768, 1024, 1360]) {
+    await page.setViewportSize({ width, height: 800 });
+    for (const route of ['/', '/concept/electric-field/', '/sims/', '/map/']) {
+      await open(page, route);
+      // Touch gets the comfortable 32 px floor; a mouse-driven desktop only has to meet the
+      // WCAG 2.2 AA target size of 24 px, which is what inline prose links are sized for.
+      const floor = width <= 1024 ? 32 : 24;
+      const report = await page.evaluate((minSize) => {
+        const tooSmall: string[] = [];
+        for (const el of document.querySelectorAll<HTMLElement>('button, a[href], input[type="range"], select')) {
+          // An element with no client rect is not laid out at all — it sits inside a collapsed
+          // disclosure or the hidden rescue panel — so it cannot be tapped and must not be counted.
+          if (el.getClientRects().length === 0) continue;
+          const box = el.getBoundingClientRect();
+          if (box.height >= minSize && box.width >= minSize) continue;
+          // On a mouse-driven desktop only real controls are held to the floor; the prerequisite
+          // chain on the study map is a diagram of short inline labels, not a row of buttons, and
+          // padding it would distort the drawing the concept depends on.
+          if (minSize === 24 && el.tagName !== 'BUTTON' && el.tagName !== 'INPUT' && el.tagName !== 'SELECT') continue;
+          const label = (el.textContent ?? el.getAttribute('aria-label') ?? '').trim().slice(0, 18);
+          tooSmall.push(`${el.tagName}.${String(el.className || '').split(' ')[0]}:${label}`);
+        }
+        return {
+          overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          tooSmall,
+        };
+      }, floor);
+      const where = `${route} at ${width}px`;
+      expect(report.overflow, `${where} overflows horizontally`).toBeLessThanOrEqual(1);
+      expect(report.tooSmall, `${where} has small targets: ${report.tooSmall.slice(0, 6).join(', ')}`).toEqual([]);
+    }
+  }
+});
+
+test('the navigation drawer opens, closes, navigates and returns focus', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 800 });
+  await open(page, '/formulas/');
+
+  const toggle = page.locator('[data-nav-toggle]');
+  const panel = page.locator('#site-nav-panel');
+  await expect(toggle).toBeVisible();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(panel).toBeHidden();
+
+  // The current section is marked without relying on colour alone: aria-current plus a visible edge.
+  await expect(panel.locator('[aria-current="page"]')).toHaveText('فرمول‌ها');
+
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(panel).toBeVisible();
+
+  // Escape closes it and puts focus back on the trigger, so keyboard users are not stranded.
+  await page.keyboard.press('Escape');
+  await expect(panel).toBeHidden();
+  expect(await toggle.evaluate((node) => node === document.activeElement)).toBe(true);
+
+  // Choosing a destination both navigates and closes the panel.
+  await toggle.click();
+  await panel.getByRole('link', { name: 'آزمایشگاه' }).click();
+  await expect(page).toHaveURL(/sims/);
+  await expect(panel).toBeHidden();
+
+  // Search and progress stay reachable from the header after navigating.
+  await expect(page.locator('[data-search-open]')).toBeVisible();
+  await expect(page.locator('[data-progress-toggle]')).toBeVisible();
+  expect(consoleErrors).toEqual([]);
+});
+
+test('navigation still works with JavaScript disabled', async ({ page }) => {
+  // Block every script so the page is served exactly as it would be with scripting off.
+  await page.route('**/*.js', (route) => route.abort());
+  await page.setViewportSize({ width: 360, height: 760 });
+  await page.goto('concept/coulomb/', { waitUntil: 'domcontentloaded' });
+  // Without scripting there is nothing to open the drawer, so the trigger must not be offered and
+  // every link must already be in the document.
+  await expect(page.locator('[data-nav-toggle]')).toBeHidden();
+  const links = page.locator('.site-nav a');
+  expect(await links.count()).toBeGreaterThan(3);
+  await expect(links.last()).toBeVisible();
+  // The header still shows the real concept count, not a stale hardcoded number.
+  await expect(page.locator('[data-progress-total]')).toHaveText('۴۷');
+});
+
 test('deep link reload works and unknown paths show the 404 page', async ({ page }) => {
   await open(page, '/concept/field-superposition/');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('چند بار نقطه‌ای');
@@ -246,13 +375,19 @@ test('reduced motion disables the animated hero but keeps the picture', async ({
   });
   expect(animated).toBe(true);
 });
-test('every simulation mounts, reacts to its controls and offers a text fallback', async ({ page }) => {
+test('every simulation mounts, reacts to its controls, resets and offers a text fallback', async ({ page }) => {
+  // These two advance a clock while mounted, so a reset restores their parameters but not their
+  // elapsed time. Everything else must read exactly as it did on arrival.
+  const ANIMATED_SIMS = new Set(['rc-lab', 'magnetic-motion']);
   await open(page, '/sims/');
   const tiles = page.locator('.sim-tile');
-  await expect(tiles).toHaveCount(14);
+  // Derived from the built gallery rather than a literal, so adding a simulation updates the
+  // expectation instead of failing it.
+  const expected = await page.locator('.sim-tile').evaluateAll((nodes) => nodes.length);
+  expect(expected).toBeGreaterThan(0);
 
   const failures: string[] = [];
-  for (let index = 0; index < 14; index++) {
+  for (let index = 0; index < expected; index++) {
     const tile = tiles.nth(index);
     const id = await tile.getAttribute('data-sim');
     await expect(tile.locator('.sim-canvas'), `${id} mounts a figure`).toBeVisible();
@@ -267,8 +402,17 @@ test('every simulation mounts, reacts to its controls and offers a text fallback
       continue;
     }
 
+    // A figure the learner cannot put back is a one-way door.
+    const reset = tile.locator('.sim-controls button', { hasText: /بازنشانی|تلاش دوباره/ });
+    if ((await reset.count()) === 0) failures.push(`${id}: no reset control`);
+
     const readAll = async () => (await tile.locator('.sim-readout-value').allInnerTexts()).join('|');
-    const before = await readAll();
+    const initial = await readAll();
+    // Capture the values as the browser holds them on arrival. Comparing against the `value`
+    // attribute would compare full precision against the step-normalised DOM value and fail even
+    // when the slider is genuinely back where it started.
+    const mountedValues: string[] = [];
+    for (let s = 0; s < sliderCount; s++) mountedValues.push(await sliders.nth(s).inputValue());
 
     // Move/press every control of this figure and require the physics read-outs to react.
     let changed = false;
@@ -278,21 +422,75 @@ test('every simulation mounts, reacts to its controls and offers a text fallback
       const min = Number(await slider.getAttribute('min'));
       const max = Number(await slider.getAttribute('max'));
       const step = Number(await slider.getAttribute('step'));
-      const next = value + step > max ? min + step : value + step;
+      const raw = value + step > max ? min + step : value + step;
+      // Snap onto the slider's own grid: `0.35 + 0.05` is 0.39999999999999997 and a range input
+      // rejects that as malformed. Snapping (rather than rounding by decimal count) also works for
+      // exponential steps like `1e-9`, where there are no decimals to round to.
+      const snapped = min + Math.round((raw - min) / step) * step;
+      const next = Math.min(max, Math.max(min, Number(snapped.toPrecision(12))));
       await slider.fill(String(next));
       await slider.dispatchEvent('input');
-      if ((await readAll()) !== before) changed = true;
+      if ((await readAll()) !== initial) changed = true;
     }
     for (let b = 0; b < buttonCount; b++) {
       const button = buttons.nth(b);
       const label = (await button.textContent())?.trim() ?? '';
-      if (label.includes('بازنشانی')) continue; // a reset is expected to restore the initial read-out
+      if (label.includes('بازنشانی') || label.includes('تلاش دوباره')) continue;
       await button.click();
-      if ((await readAll()) !== before) changed = true;
+      if ((await readAll()) !== initial) changed = true;
     }
-    if (!changed) failures.push(`${id}: controls moved but no read-out changed (read-out: ${before})`);
+    if (!changed) failures.push(`${id}: controls moved but no read-out changed (read-out: ${initial})`);
+
+    // Reset must bring the figure back to the state it was mounted with.
+    if ((await reset.count()) > 0) {
+      await reset.first().click();
+      // Sliders and segmented groups must return to their mounted values whatever the figure.
+      for (let s = 0; s < sliderCount; s++) {
+        const slider = sliders.nth(s);
+        expect(await slider.inputValue(), `${id} slider ${s} was not reset`).toBe(mountedValues[s]);
+      }
+      // Animated figures keep running, so their clock-derived read-out legitimately keeps moving;
+      // every other figure must read exactly as it did on arrival.
+      const animated = ANIMATED_SIMS.has(id ?? '');
+      if (!animated && (await readAll()) !== initial) {
+        failures.push(`${id}: reset did not restore the initial read-out\n  before: ${initial}\n  after:  ${await readAll()}`);
+      }
+    }
   }
   expect(failures, failures.join('\n')).toEqual([]);
+  expect(consoleErrors).toEqual([]);
+});
+
+test('the two new trainers are embedded in their lessons and teach their relationship', async ({ page }) => {
+  // Vector trainer: components drive magnitude and angle, and reset returns the textbook 3-4-5.
+  await open(page, '/concept/net-force-superposition/');
+  const vector = page.locator('[data-sim="vector-trainer"]');
+  await expect(vector.locator('canvas')).toBeVisible();
+  await expect(vector.locator('.sim-text summary')).toBeVisible();
+  const readVector = async () => (await vector.locator('.sim-readout-value').allInnerTexts()).join('|');
+  const start = await readVector();
+  await vector.locator('input[type=range]').first().fill('6');
+  await vector.locator('input[type=range]').nth(1).fill('-2');
+  await expect.poll(readVector).not.toBe(start);
+  await vector.getByRole('button', { name: 'بازنشانی' }).click();
+  await expect.poll(readVector).toBe(start);
+
+  // Right-hand rule: a wrong pick and a right pick must look different, and retry must clear it.
+  await open(page, '/concept/right-hand-rule/');
+  const hand = page.locator('[data-sim="hand-rule-trainer"]');
+  await expect(hand.locator('canvas')).toBeVisible();
+  const readHand = async () => (await hand.locator('.sim-readout-value').allInnerTexts()).join('|');
+  const idle = await readHand();
+  // v along +x, B out of the page ⇒ F = q(v x B) is along −y for a positive charge.
+  await hand.getByRole('button', { name: '+x', exact: true }).click();
+  const wrong = await readHand();
+  expect(wrong).not.toBe(idle);
+  expect(wrong).toContain('نادرست');
+  await hand.getByRole('button', { name: '−y', exact: true }).click();
+  const right = await readHand();
+  expect(right).toContain('درست');
+  await hand.getByRole('button', { name: 'تلاش دوباره' }).click();
+  await expect.poll(readHand).toBe(idle);
   expect(consoleErrors).toEqual([]);
 });
 

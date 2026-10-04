@@ -95,6 +95,9 @@ export function layout({ title, description, route, prefix, assets, body, pageDa
     (item) =>
       `<a class="nav-link ${activeNav === item.match ? 'is-active' : ''}" href="${prefix}${item.href}"${activeNav === item.match ? ' aria-current="page"' : ''}>${item.label}</a>`,
   ).join('');
+  // The progress total is written into the static markup so the ribbon is correct with JavaScript
+  // disabled; a hardcoded default used to ship `۴۸` against a 47-concept registry.
+  const progressTotal = toPersian(conceptCount);
   return `<!doctype html>
 <html lang="fa" dir="rtl">
 <head>
@@ -113,11 +116,16 @@ ${assets.css ? `<link rel="stylesheet" href="${assets.css}">` : ''}
 <a class="skip-link" href="#main">پرش به محتوای اصلی</a>
 <header class="site-header">
   <div class="header-inner">
+    <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="site-nav-panel">
+      <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M3 5.5h14M3 10h14M3 14.5h14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+      <span class="nav-toggle-label">فهرست</span>
+      <span class="sr-only">باز و بسته کردن فهرست</span>
+    </button>
     <a class="brand" href="${prefix}index.html">
       ${logoMark()}
       <span class="brand-text"><strong>فیزیک ۲</strong><span>یادگیری تعاملی</span></span>
     </a>
-    <nav class="site-nav" aria-label="ناوبری اصلی">${nav}</nav>
+    <nav class="site-nav" id="site-nav-panel" aria-label="ناوبری اصلی">${nav}</nav>
     <div class="header-actions">
       <button class="search-trigger" type="button" data-search-open aria-label="جست‌وجو در درس‌ها">
         <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m12.8 12.8 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -125,7 +133,7 @@ ${assets.css ? `<link rel="stylesheet" href="${assets.css}">` : ''}
       </button>
       <button class="progress-trigger" type="button" data-progress-toggle aria-expanded="false" aria-controls="progress-panel">
         <span class="progress-mini" data-progress-mini aria-hidden="true"></span>
-        <span class="progress-count"><span data-progress-done>۰</span><span class="progress-count-sep">/</span><span data-progress-total>۴۸</span></span>
+        <span class="progress-count"><span data-progress-done>۰</span><span class="progress-count-sep">/</span><span data-progress-total>${progressTotal}</span></span>
         <span class="sr-only">پیشرفت من</span>
       </button>
       <div class="progress-panel" id="progress-panel" data-progress-panel hidden></div>
@@ -169,13 +177,17 @@ function footer() {
 /* ------------------------------------------------------------- components */
 
 export function breadcrumbs(items) {
+  // Each crumb is its own `li`: an `<ol>` may only contain list items, and the bare anchors this
+  // used to emit were invalid markup that the browser had to recover from.
   const parts = items
-    .map((item, index) =>
-      item.href
-        ? `<a href="${item.href}">${escapeHtml(item.label)}</a>`
-        : `<span aria-current="page">${escapeHtml(item.label)}</span>`,
+    .map((item) =>
+      `<li>${
+        item.href
+          ? `<a href="${item.href}">${escapeHtml(item.label)}</a>`
+          : `<span aria-current="page">${escapeHtml(item.label)}</span>`
+      }</li>`,
     )
-    .join('<span class="crumb-sep" aria-hidden="true">‹</span>');
+    .join('<li class="crumb-sep" aria-hidden="true">‹</li>');
   return `<nav class="breadcrumbs" aria-label="مسیر صفحه"><ol>${parts}</ol></nav>`;
 }
 
@@ -281,16 +293,41 @@ export function misconceptionsBlock(items) {
   return `<ul class="misconceptions">${rows}</ul>`;
 }
 
-export function simBlock(visual, conceptId) {
-  return `<div class="sim" data-sim="${escapeAttribute(visual.sim ?? '')}" data-concept="${escapeAttribute(conceptId)}">
+/** One interactive figure plus its always-available text equivalent. */
+function oneSim(simId, caption, fallback, conceptId) {
+  return `<div class="sim" data-sim="${escapeAttribute(simId)}" data-concept="${escapeAttribute(conceptId)}">
   <div class="sim-stage" data-sim-stage>
     <p class="sim-loading">در حال آماده‌سازی شبیه‌سازی…</p>
   </div>
   <details class="sim-text">
     <summary>توضیح متنی همین تصویر (بدون نیاز به اجرا)</summary>
-    <div>${renderProse(visual.fallback)}</div>
+    <div>${renderProse(fallback)}</div>
   </details>
 </div>`;
+}
+
+/**
+ * A concept's layer-B figures.
+ *
+ * `visual.sim` is the primary figure; `visual.extra` carries further compact figures for the same
+ * concept, so a lesson can host a second lab without the learner having to leave for `/sims/`. Each
+ * extra still ships its own text equivalent, and every figure resolves through the same lazy chunk
+ * registry, so nothing here duplicates simulation code.
+ */
+export function simBlock(visual, conceptId) {
+  const parts = [];
+  const primary = visual?.sim;
+  if (primary) {
+    parts.push(oneSim(primary, visual.caption, visual.fallback, conceptId));
+  }
+  for (const extra of visual?.extra ?? []) {
+    if (!extra?.sim) continue;
+    parts.push(
+      `<p class="sim-extra-caption">${escapeHtml(extra.caption)}</p>` +
+        oneSim(extra.sim, extra.caption, extra.fallback ?? visual.fallback, conceptId),
+    );
+  }
+  return parts.join('\n');
 }
 
 export function quizBlock(questions, { title = 'بیا امتحان کنیم', partId = 'part-1' } = {}) {

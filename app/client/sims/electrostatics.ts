@@ -4,7 +4,7 @@ import { dipoleAxialFieldApprox, dipoleEquatorialFieldApprox, netField, pointCha
 import { EPSILON_0 } from '../../physics/constants.ts';
 import { type Vec2, magnitude, unit } from '../../physics/vector.ts';
 import { fmt } from '../dom.ts';
-import { arrow, button, chargeDot, clear, createStage, grid, label, plotCurve, plotFrame, readoutList, segmented, slider } from './kit.ts';
+import { arrow, button, chargeDot, clear, createStage, grid, label, plotCurve, plotFrame, readoutList, resetControl, segmented, slider } from './kit.ts';
 
 const POS = '#e13b2b';
 const NEG = '#1e7be8';
@@ -26,9 +26,11 @@ export function mountChargeLab(host: HTMLElement): void {
   const readout = readoutList(host);
   const panel = controlHost(host);
   const state = { protons: 7, electrons: 7 };
+  const INITIAL = { ...state };
 
   const paint = () => {
     clear(stage);
+    readout.clear();
     grid(stage, 24, true);
     const net = state.protons - state.electrons;
     const unit = Math.min(1.1, stage.width / 560);
@@ -111,6 +113,11 @@ export function mountChargeLab(host: HTMLElement): void {
       paint();
     },
   });
+  // The +/- buttons change state that no slider mirrors, so the reset restores it explicitly.
+  resetControl(panel, paint, 'بازنشانی', () => {
+    state.electrons = 7;
+    state.protons = 7;
+  });
   paint();
 }
 
@@ -121,9 +128,11 @@ export function mountCoulombLab(host: HTMLElement): void {
   const readout = readoutList(host);
   const panel = controlHost(host);
   const state = { q1: 2, q2: -3, r: 1.2 };
+  const INITIAL = { ...state };
 
   const paint = () => {
     clear(stage);
+    readout.clear();
     grid(stage, 24, true);
     const left: Vec2 = { x: -state.r / 2, y: 0 };
     const right: Vec2 = { x: state.r / 2, y: 0 };
@@ -160,6 +169,7 @@ export function mountCoulombLab(host: HTMLElement): void {
   slider(panel, { label: 'بار اول', min: -6, max: 6, step: 1, value: state.q1, unit: 'µC', onInput: (value) => { state.q1 = value; paint(); } });
   slider(panel, { label: 'بار دوم', min: -6, max: 6, step: 1, value: state.q2, unit: 'µC', onInput: (value) => { state.q2 = value; paint(); } });
   slider(panel, { label: 'فاصله', min: 0.4, max: 3, step: 0.1, value: state.r, unit: 'm', onInput: (value) => { state.r = value; paint(); } });
+  resetControl(panel, paint);
   paint();
 }
 
@@ -171,9 +181,11 @@ export function mountTriangleForces(host: HTMLElement): void {
   const panel = controlHost(host);
   const side = 0.5;
   const state = { q1: 1, q2: -2, q3: -2 };
+  const INITIAL = { ...state };
 
   const paint = () => {
     clear(stage);
+    readout.clear();
     grid(stage, 24, true);
     const charges: Charge[] = [
       { q: state.q1 * 1e-6, position: { x: 0, y: side } },
@@ -220,6 +232,7 @@ export function mountTriangleForces(host: HTMLElement): void {
   slider(panel, { label: 'q₁ (بالا)', min: -4, max: 4, step: 1, value: state.q1, unit: 'µC', onInput: (value) => { state.q1 = value; paint(); } });
   slider(panel, { label: 'q₂ (هدف، چپ)', min: -4, max: 4, step: 1, value: state.q2, unit: 'µC', onInput: (value) => { state.q2 = value; paint(); } });
   slider(panel, { label: 'q₃ (راست)', min: -4, max: 4, step: 1, value: state.q3, unit: 'µC', onInput: (value) => { state.q3 = value; paint(); } });
+  resetControl(panel, paint);
   paint();
 }
 
@@ -230,9 +243,11 @@ export function mountSquareBalance(host: HTMLElement): void {
   const readout = readoutList(host);
   const panel = controlHost(host);
   const state = { ratio: Math.SQRT2 / 2, Q: 1 };
+  const INITIAL = { ...state };
 
   const paint = () => {
     clear(stage);
+    readout.clear();
     grid(stage, 24, true);
     const a = 0.32;
     const corners: Vec2[] = [
@@ -265,6 +280,12 @@ export function mountSquareBalance(host: HTMLElement): void {
   slider(panel, { label: 'q / Q', min: 0, max: 2, step: 0.001, value: state.ratio, onInput: (value) => { state.ratio = value; paint(); } });
   slider(panel, { label: 'Q', min: 1, max: 8, step: 1, value: state.Q, unit: 'µC', onInput: (value) => { state.Q = value; paint(); } });
   button(panel, { label: 'برسان به جواب √۲ ÷ ۲', onClick: () => { state.ratio = Math.SQRT2 / 2; paint(); } });
+  // The mounted ratio is √2/2, which the 0.001-step slider can only represent as 0.707. Restore the
+  // exact figure state so the read-out returns to the answer rather than a truncated version of it.
+  resetControl(panel, paint, 'بازنشانی', () => {
+    state.ratio = Math.SQRT2 / 2;
+    state.Q = 1;
+  });
   paint();
 }
 
@@ -279,6 +300,7 @@ export function mountFieldLab(host: HTMLElement): void {
     { q: -2e-6, x: 0.9, y: -0.5 },
   ];
   const probe = { q0: 1e-8, x: 0, y: 0.9 };
+  const INITIAL = { ...probe };
   const showArrows = { value: true };
   let dragging = -99;
 
@@ -287,6 +309,7 @@ export function mountFieldLab(host: HTMLElement): void {
 
   const paint = () => {
     clear(stage);
+    readout.clear();
     grid(stage, 24, true);
     const source = physics();
     if (showArrows.value) {
@@ -366,7 +389,20 @@ export function mountFieldLab(host: HTMLElement): void {
 
   slider(panel, { label: 'بار اول', min: -4, max: 4, step: 0.5, value: 2, unit: 'µC', onInput: (value) => { charges[0]!.q = value * 1e-6; paint(); } });
   slider(panel, { label: 'بار دوم', min: -4, max: 4, step: 0.5, value: -2, unit: 'µC', onInput: (value) => { charges[1]!.q = value * 1e-6; paint(); } });
-  slider(panel, { label: 'بار آزمایشی q₀', min: -4, max: 4, step: 0.5, value: 1, unit: 'µC', onInput: (value) => { probe.q0 = value * 1e-6; paint(); } });
+  slider(panel, {
+    label: 'بار آزمایشی q₀',
+    min: -4,
+    max: 4,
+    // 0.01 µC = 10 nC is the true starting value: a test charge must stay negligible next to the
+    // source charges, so a slider defaulting to 1 µC would silently be two orders of magnitude off
+    // from the state the figure actually starts in.
+    step: 0.01,
+    value: 0.01,
+    unit: 'µC',
+    format: (value) => `${fmt(value, 2)} µC`,
+    onInput: (value) => { probe.q0 = value * 1e-6; paint(); },
+  });
+  resetControl(panel, paint);
   paint();
 }
 
@@ -377,9 +413,11 @@ export function mountDipoleLab(host: HTMLElement): void {
   const readout = readoutList(host);
   const panel = controlHost(host);
   const state = { q: 3, d: 0.4, r: 1.2, point: 'axis' as 'axis' | 'equator' };
+  const INITIAL = { ...state };
 
   const paint = () => {
     clear(stage);
+    readout.clear();
     grid(stage, 24, true);
     const q = state.q * 1e-6;
     chargeDot(stage, { x: -state.d / 2, y: 0 }, -q, { radius: 15, labelText: '−q' });
@@ -456,5 +494,6 @@ export function mountDipoleLab(host: HTMLElement): void {
   slider(panel, { label: 'بار هر قطب', min: 0.5, max: 6, step: 0.5, value: state.q, unit: 'µC', onInput: (value) => { state.q = value; paint(); } });
   slider(panel, { label: 'فاصله‌ی دو قطب d', min: 0.1, max: 0.8, step: 0.05, value: state.d, unit: 'm', onInput: (value) => { state.d = value; paint(); } });
   slider(panel, { label: 'فاصله‌ی نقطه r', min: 0.4, max: 2.4, step: 0.1, value: state.r, unit: 'm', onInput: (value) => { state.r = value; paint(); } });
+  resetControl(panel, paint);
   paint();
 }

@@ -186,7 +186,14 @@ export interface Control {
   refresh?: () => void;
 }
 
-/** Panels live next to the figure, not inside the drawing area. */
+/**
+ * Restores registered per segmented group.
+ *
+ * A reset has to reach the figure's own state, not just repaint the buttons. Each group registers
+ * the function that re-selects its mounted option (which runs the figure's `onChange`), and reset
+ * calls it. Toggling CSS classes alone would leave the physics showing the learner's last choice.
+ */
+const groupRestores = new WeakMap<HTMLElement, () => void>();
 function panelHost(stage: HTMLElement): HTMLElement {
   return stage.closest('.sim-tile, .sim-figure, .sim') ?? stage;
 }
@@ -229,6 +236,8 @@ export function slider(panel: HTMLElement, options: SliderOptions): Control {
   const valueNode = el('span', { class: 'sim-control-value' });
   labelNode.append(document.createTextNode(options.label), valueNode);
   const input = el('input', { type: 'range', id, min: String(options.min), max: String(options.max), step: String(options.step), value: String(options.value) });
+  // Captured once: a reset restores the state the figure was mounted with.
+  const initial = options.value;
   const paint = () => {
     valueNode.textContent = options.format ? options.format(Number(input.value)) : `${fmt(Number(input.value), 3)}${options.unit ? ` ${options.unit}` : ''}`;
   };
@@ -242,12 +251,11 @@ export function slider(panel: HTMLElement, options: SliderOptions): Control {
   return {
     root: wrapper,
     refresh: () => {
-      input.value = String(options.value);
+      input.value = String(initial);
       paint();
     },
   };
 }
-
 export function segmented(
   panel: HTMLElement,
   { label, options, value, onChange }: { label: string; options: { id: string; label: string }[]; value: string; onChange: (id: string) => void },
@@ -255,18 +263,33 @@ export function segmented(
   const wrapper = el('div', { class: 'sim-control' });
   const group = el('div', { class: 'segmented', role: 'group', 'aria-label': label });
   const buttons: HTMLButtonElement[] = [];
-  for (const option of options) {
-    const button = el('button', { type: 'button', class: `segment ${option.id === value ? 'is-active' : ''}`, text: option.label });
-    button.addEventListener('click', () => {
-      for (const other of buttons) other.classList.toggle('is-active', other === button);
-      onChange(option.id);
+  // Captured once: a reset restores the state the figure was mounted with.
+  const initial = value;
+  let current = initial;
+  const select = (id: string, notify = true) => {
+    current = id;
+    buttons.forEach((buttonNode, index) => {
+      const active = options[index]?.id === current;
+      buttonNode.classList.toggle('is-active', active);
+      buttonNode.setAttribute('aria-pressed', String(active));
     });
+    // Notifying on reset too is what puts the figure's own state back, not just its buttons.
+    if (notify) onChange(id);
+  };
+  for (const option of options) {
+    const button = el('button', { type: 'button', class: `segment ${option.id === value ? 'is-active' : ''}`, text: option.label, 'aria-pressed': String(option.id === value) });
+    if (option.id === initial) button.dataset.initial = 'true';
+    button.addEventListener('click', () => select(option.id));
     buttons.push(button);
     group.append(button);
   }
   wrapper.append(el('span', { class: 'sim-control-label', text: label }), group);
   panel.append(wrapper);
-  return { root: wrapper };
+  groupRestores.set(group, () => select(initial));
+  return {
+    root: wrapper,
+    refresh: () => select(initial),
+  };
 }
 
 export function toggle(
@@ -290,14 +313,68 @@ export function button(panel: HTMLElement, { label, onClick }: { label: string; 
   return { root: node };
 }
 
+/**
+ * Put a figure back to the state it was mounted with.
+ *
+ * A simulation that cannot be reset is a one-way door: once a slider is dragged the learner has no
+ * way back to the textbook case without reloading the page. Resetting reads the *DOM* rather than a
+ * list of controls — every slider's `defaultValue` is the value it was created with, and segmented
+ * buttons remember their initial selection — so any figure can opt in with one call, and the
+ * sliders re-render their read-outs through their normal input path.
+ */
+export function resetControl(
+  panel: HTMLElement,
+  repaint: () => void,
+  label = 'بازنشانی',
+  after?: () => void,
+): Control {
+  return button(panel, {
+    label,
+    onClick: () => {
+      // Restore every slider, then replay each control's input path. Every input is replayed, not
+      // only the ones that moved: an action button ("snap to the answer") can change the figure's
+      // state without touching a slider, and only a full replay puts that back.
+      const ranges = [...panel.querySelectorAll<HTMLInputElement>('input[type="range"]')];
+      for (const input of ranges) input.value = input.defaultValue;
+      for (const input of ranges) input.dispatchEvent(new Event('input', { bubbles: true }));
+      for (const group of panel.querySelectorAll<HTMLElement>('.segmented')) {
+        const restore = groupRestores.get(group);
+        if (restore) {
+          restore();
+          continue;
+        }
+        const initial = group.querySelector<HTMLElement>('[data-initial="true"]');
+        for (const segment of group.querySelectorAll<HTMLElement>('.segment')) {
+          const active = segment === initial;
+          segment.classList.toggle('is-active', active);
+          segment.setAttribute('aria-pressed', String(active));
+        }
+      }
+      after?.();
+      repaint();
+    },
+  });
+}
+
 export interface Readout {
   set: (label: string, value: string, tone?: 'ok' | 'warn' | 'muted') => void;
+  /**
+   * Drop every row.
+   *
+   * Figures that switch between cases (a different Gauss symmetry, a different capacitor
+   * connection) publish different read-out rows per case. Without clearing, switching back and
+   * forth leaves the previous case's numbers on screen next to the current ones.
+   */
+  clear: () => void;
 }
 
 export function readoutList(host: HTMLElement): Readout {
   const box = readouts(host);
   box.textContent = '';
   return {
+    clear() {
+      box.textContent = '';
+    },
     set(label, value, tone = 'muted') {
       let row = box.querySelector<HTMLElement>(`[data-readout="${CSS.escape(label)}"]`);
       if (!row) {

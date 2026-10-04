@@ -9,7 +9,10 @@ echo "→ typecheck"
 npx tsc --noEmit
 
 echo "→ unit and content-integrity tests"
-node --test tests/site/physics.test.ts tests/site/content-integrity.test.mjs tests/site/math-render.test.mjs
+node --test tests/site/physics.test.ts tests/site/content-integrity.test.mjs tests/site/math-render.test.mjs tests/site/content-numeric.test.mjs
+
+echo "→ numerical content audit (P0 correctness gate)"
+node app/build/numeric-audit.mjs
 
 echo "→ note coverage report"
 node app/build/build.mjs --coverage-only
@@ -21,5 +24,11 @@ SITE_BASE=/physics2 npm run build
 
 echo "→ GitHub Pages sub-path check"
 node scripts/check-subpath-build.mjs
+
+echo "→ internal consistency (shipped counts match the registry, JS disabled)"
+node --test tests/site/internal-consistency.test.mjs
+
+echo "→ semantic formula rendering in a real browser (P0/U2)"
+node scripts/check-math-rendering.mjs
 
 echo "✔ project verification passed"

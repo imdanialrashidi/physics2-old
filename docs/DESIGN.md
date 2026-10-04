@@ -107,9 +107,14 @@ rendered at build time, so formulas never reflow after paint and read correctly 
 - Desktop: 1180 px shell; concept pages are content + 288 px sticky sidebar (TOC, prerequisites,
   formula index); hub pages use auto-fill grids.
 - 1080 px: sidebar drops below the article as a three-column support row (article stays first).
-- 880 px: hero stacks with the figure first, nav becomes a single horizontally scrollable row,
-  lesson head drops its emblem column.
-- 560 px: single column, tighter spacing, one-column simulation gallery, quiz options wrap.
+- 880 px: hero stacks with the figure first; the header becomes one compact row and the nav moves
+  into a panel that opens beneath it (see the decision log). The panel is only collapsible when
+  `html.js` is set — without scripting the list simply wraps in place.
+- 1024 px: touch-target floor applies (40 px minimum for map nodes, TOC, breadcrumbs, footer links,
+  inline links and simulation controls). This is deliberately wider than the header breakpoint,
+  because tablets are touched even though the header layout does not change there.
+- 560 px: single column, tighter spacing, one-column simulation gallery, quiz options wrap, the
+  nav toggle drops its label and becomes an icon.
 - Long formulas scroll inside `.math-block` / `.math-inline` instead of pushing the page wide.
 - RTL: `dir="rtl"` on `<html>`, logical properties throughout, Latin runs (`imdanialrashidi.github.io`,
   math, units) isolated with `direction: ltr; unicode-bidi: isolate`.
@@ -184,3 +189,19 @@ fallback, clipboard), success (copy, quiz score, "این مفهوم تمام ش�
 | 2026-10-03 | Content authored as `.mjs` data, not Markdown-at-runtime | build-time coverage check is the real integrity guarantee | never |
 | 2026-10-03 | Field-ruler grid + charge ribbon as the two signatures | owner asked for "distinctive, not generic"; both are physics-derived, not decorative | if a third motif is introduced, retire one |
 | 2026-10-03 | §6.1 arithmetic slip in the notes shown as a marked correction | re-derived value 5.63×10⁷ N/C; the note's own line is inconsistent | if the owner prefers silent alignment with the note |
+
+### Agent-proposed refinements (2026-10-24) — new, not owner-approved
+
+These keep the two signatures and the notebook thesis intact; they change *proportion and
+interaction*, not the visual idea.
+
+| Area | Refinement | Why | Revisit when |
+|---|---|---|---|
+| Composition → 880 px | **Phone header as one row plus a disclosure panel** (`nav-toggle` + `#site-nav-panel`) instead of a second horizontally scrolling nav row | measured: the old header cost 112 px = 14 % of a 760 px viewport on *every* page, and its nav `scrollWidth` exceeded `clientWidth` by 101 px at 360 px, hiding «واژه‌نامه» with no affordance. Now 60 px (7 %) and nothing clipped | if a bottom-navigation pattern is ever adopted |
+| Header | The trigger only appears once `html.js` is set by the client | a hamburger that cannot open because a chunk failed would hide the whole navigation; without scripting the list stays expanded and reachable | never |
+| States | Current section marked with a 3 px inset edge **and** `aria-current`, not colour alone | DESIGN.md already forbids colour-only state; the panel made it necessary to be explicit | never |
+| Touch targets ≤ 1024 px | Map nodes, TOC, breadcrumbs, footer links, inline links and simulation controls get a 40 px minimum | they measured 22–28 px; on the study map a near-miss silently follows the wrong prerequisite chain | if the map gets its own mobile treatment |
+| Motion | A single interaction block: 1 px `:active` press, 0.12 s colour/transform, `paper-reveal` on open disclosures | the site previously had **no** press feedback and no disabled styling at all | never |
+| Reduced motion | Effects are *removed*, not shortened, under `prefers-reduced-motion` | a 1 ms transform is still a 1 px jump | never |
+| Copy button | `.is-copied` / `.is-failed` states carried by glyph + wording as well as colour | the previous confirmation was text-only with no visual state | never |
+| Simulations | One authoritative `resetControl` per figure (shared, DOM-driven) | 12 of 14 figures had no way back to their starting state | never |

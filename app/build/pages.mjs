@@ -396,6 +396,8 @@ export function conceptPage(ctx, concept) {
       partId: concept.part,
       questionIds: concept.practice,
       sim: concept.visual?.sim ?? null,
+      // A concept can host more than one compact figure; the client mounts each in turn.
+      sims: [concept.visual?.sim, ...(concept.visual?.extra ?? []).map((entry) => entry.sim)].filter(Boolean),
     }),
   });
 }
@@ -680,6 +682,8 @@ export const SIMULATIONS = [
   { id: 'coulomb-lab', title: 'آزمایشگاه قانون کولن', part: 'part-1', concept: 'coulomb', hint: 'دو بار، نیرو و افت $1/r^2$' },
   { id: 'triangle-forces', title: 'جمع برداری نیرو در مثلث', part: 'part-1', concept: 'net-force-superposition', hint: 'سه بار روی مثلث متساوی‌الاضلاع' },
   { id: 'square-balance', title: 'مربع و نیروی خالص صفر', part: 'part-1', concept: 'net-force-superposition', hint: 'پیدا کردن $q/Q$ برای تعادل' },
+  { id: 'vector-trainer', title: 'آموزگر بردار', part: 'part-1', concept: 'net-force-superposition', hint: 'تبدیل اندازه و زاویه به مؤلفه‌های x و y' },
+  { id: 'hand-rule-trainer', title: 'آموزگر قاعده‌ی دست راست', part: 'part-5', concept: 'right-hand-rule', hint: 'پیدا کردن جهت نیروی مغناطیسی' },
   { id: 'field-lab', title: 'نقشه‌ی میدان الکتریکی', part: 'part-1', concept: 'electric-field', hint: 'بارها را بکش، میدان و نیروی $q_0$ را ببین' },
   { id: 'dipole-lab', title: 'دوقطبی روی محور و عمودمنصف', part: 'part-1', concept: 'electric-dipole', hint: 'مقایسه‌ی میدان و افت $1/r^3$' },
   { id: 'gauss-lab', title: 'آزمایشگاه قانون گاوس', part: 'part-2', concept: 'gauss-law', hint: 'کره، سیم، صفحه و حلقه با سطح گاوسی' },
