@@ -1,0 +1,65 @@
+name: pages
+
+# Deploys the static Physics II learning site to GitHub Pages. No secrets: the default
+# GITHUB_TOKEN is enough because Pages only reads this repository.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22.23.2
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify content coverage, types and unit tests
+        run: npm run ci
+
+      - name: Build the static site
+        # SITE_BASE is the GitHub Pages project path. Only the 404 page needs it (it is served at
+        # whatever URL was requested, so relative asset URLs cannot work); every other page uses a
+        # depth-relative prefix and stays host-agnostic.
+        run: npm run build
+        env:
+          SITE_BASE: /physics2
+
+      - name: Check the built site under a project sub-path
+        run: node scripts/check-subpath-build.mjs
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

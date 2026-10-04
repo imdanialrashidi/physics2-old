@@ -2,65 +2,211 @@
   "version": 1,
   "routes": [
     {
+      "id": "learning-site",
+      "include": [
+        "app/**",
+        "tests/site/**",
+        "tests/browser/**",
+        "scripts/check-subpath-build.mjs",
+        "scripts/project-verify.sh",
+        "playwright.config.mjs",
+        "vite.config.mjs",
+        "package.json",
+        "Lecture notes/**",
+        "docs/PRODUCT.md",
+        "docs/DESIGN.md",
+        "docs/ARCHITECTURE.md",
+        "docs/QUALITY.md"
+      ],
+      "commands": [
+        [
+          "bash",
+          "scripts/project-verify.sh"
+        ]
+      ]
+    },
+    {
+      "id": "learning-site-browser",
+      "include": [
+        "app/client/**",
+        "app/styles/**",
+        "app/physics/**",
+        "tests/browser/**"
+      ],
+      "commands": [
+        [
+          "npx",
+          "playwright",
+          "test",
+          "--project=desktop",
+          "--project=mobile"
+        ]
+      ]
+    },
+    {
       "id": "run-metrics",
-      "include": [".pi/extensions/run-metrics.js", "tests/run-metrics.test.mjs"],
-      "commands": [["node", "--test", "tests/run-metrics.test.mjs"]]
+      "include": [
+        ".pi/extensions/run-metrics.js",
+        "tests/run-metrics.test.mjs"
+      ],
+      "commands": [
+        [
+          "node",
+          "--test",
+          "tests/run-metrics.test.mjs"
+        ]
+      ]
     },
     {
       "id": "pr-delivery",
-      "include": ["scripts/ai-pr.mjs", "tests/ai-pr.test.mjs", "docs/GIT_POLICY.md"],
-      "commands": [["node", "--test", "tests/ai-pr.test.mjs"]]
+      "include": [
+        "scripts/ai-pr.mjs",
+        "tests/ai-pr.test.mjs",
+        "docs/GIT_POLICY.md"
+      ],
+      "commands": [
+        [
+          "node",
+          "--test",
+          "tests/ai-pr.test.mjs"
+        ]
+      ]
     },
     {
       "id": "workflow-evals",
-      "include": ["scripts/run-workflow-evals.mjs", "scripts/lib/workflow-evals.mjs", "scripts/lib/eval-isolation.mjs", "tests/eval-isolation.test.mjs", "tests/test-design-contract.test.mjs", "evals/**", "tests/workflow-evals.test.mjs"],
+      "include": [
+        "scripts/run-workflow-evals.mjs",
+        "scripts/lib/workflow-evals.mjs",
+        "scripts/lib/eval-isolation.mjs",
+        "tests/eval-isolation.test.mjs",
+        "tests/test-design-contract.test.mjs",
+        "evals/**",
+        "tests/workflow-evals.test.mjs"
+      ],
       "commands": [
-        ["node", "--test", "tests/workflow-evals.test.mjs", "tests/eval-isolation.test.mjs", "tests/test-design-contract.test.mjs"],
-        ["node", "scripts/run-workflow-evals.mjs", "--dry-run"]
+        [
+          "node",
+          "--test",
+          "tests/workflow-evals.test.mjs",
+          "tests/eval-isolation.test.mjs",
+          "tests/test-design-contract.test.mjs"
+        ],
+        [
+          "node",
+          "scripts/run-workflow-evals.mjs",
+          "--dry-run"
+        ]
       ]
     },
     {
       "id": "verification-router",
-      "include": ["scripts/verify-affected.mjs", "tests/verify-affected.test.mjs", ".pi/verification.json"],
+      "include": [
+        "scripts/verify-affected.mjs",
+        "tests/verify-affected.test.mjs",
+        ".pi/verification.json"
+      ],
       "commands": [
-        ["node", "--test", "tests/verify-affected.test.mjs"]
+        [
+          "node",
+          "--test",
+          "tests/verify-affected.test.mjs"
+        ]
       ]
     },
     {
       "id": "safety-guard",
-      "include": [".pi/extensions/safety-guard.js", ".pi/mcp.json", "scripts/pi-sandbox.sh", "tests/safety-guard.test.mjs"],
+      "include": [
+        ".pi/extensions/safety-guard.js",
+        ".pi/mcp.json",
+        "scripts/pi-sandbox.sh",
+        "tests/safety-guard.test.mjs"
+      ],
       "commands": [
-        ["node", "--test", "tests/safety-guard.test.mjs"]
+        [
+          "node",
+          "--test",
+          "tests/safety-guard.test.mjs"
+        ]
       ]
     },
     {
       "id": "harness-runtime",
-      "include": [".pi/extensions/harness-runtime.js", ".pi/models.env", "tests/harness-runtime.test.mjs"],
+      "include": [
+        ".pi/extensions/harness-runtime.js",
+        ".pi/models.env",
+        "tests/harness-runtime.test.mjs"
+      ],
       "commands": [
-        ["node", "--test", "tests/harness-runtime.test.mjs"]
+        [
+          "node",
+          "--test",
+          "tests/harness-runtime.test.mjs"
+        ]
       ]
     },
     {
       "id": "launcher",
-      "include": ["p", ".pi/models.env", "scripts/pi-sandbox.sh", "scripts/pi-extension-compat.mjs", "tests/launcher.test.mjs", "tests/pi-extension-compat.test.mjs"],
+      "include": [
+        "p",
+        ".pi/models.env",
+        "scripts/pi-sandbox.sh",
+        "scripts/pi-extension-compat.mjs",
+        "tests/launcher.test.mjs",
+        "tests/pi-extension-compat.test.mjs"
+      ],
       "commands": [
-        ["node", "--test", "tests/launcher.test.mjs", "tests/pi-extension-compat.test.mjs"]
+        [
+          "node",
+          "--test",
+          "tests/launcher.test.mjs",
+          "tests/pi-extension-compat.test.mjs"
+        ]
       ]
     },
     {
       "id": "custom-provider",
-      "include": ["p", "scripts/pi-provider.mjs", "tests/pi-provider.test.mjs"],
-      "commands": [["node", "--test", "tests/pi-provider.test.mjs"]]
+      "include": [
+        "p",
+        "scripts/pi-provider.mjs",
+        "tests/pi-provider.test.mjs"
+      ],
+      "commands": [
+        [
+          "node",
+          "--test",
+          "tests/pi-provider.test.mjs"
+        ]
+      ]
     },
     {
       "id": "workflow-contract",
-      "include": ["AGENTS.md", ".pi/mcp.json", ".pi/**", ".github/**", "p", "*.md", "docs/**", "scripts/*.sh", "scripts/verify-package-integrity.mjs", "Dockerfile.pi", ".dockerignore"],
+      "include": [
+        "AGENTS.md",
+        ".pi/mcp.json",
+        ".pi/**",
+        ".github/**",
+        "p",
+        "*.md",
+        "docs/**",
+        "scripts/*.sh",
+        "scripts/verify-package-integrity.mjs",
+        "Dockerfile.pi",
+        ".dockerignore"
+      ],
       "commands": [
-        ["bash", "scripts/pi-doctor.sh", "--ci", "--static"]
+        [
+          "bash",
+          "scripts/pi-doctor.sh",
+          "--ci",
+          "--static"
+        ]
       ]
     }
   ],
   "fallback": [
-    ["bash", "scripts/verify.sh"]
+    [
+      "bash",
+      "scripts/verify.sh"
+    ]
   ]
 }

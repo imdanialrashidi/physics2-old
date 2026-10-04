@@ -1,153 +1,186 @@
 # Product Design Contract
 
-Keep this document specific, short, and durable. It is the visual and interaction source of truth shared by design, implementation, browser QA, and review. Replace template prompts with accepted decisions; do not preserve a menu of unused options.
+Visual and interaction source of truth for the Physics II learning site. Owner-stated direction and
+agent-proposed values are kept apart; the CSS custom properties in `app/styles/main.css` own the
+resolved values.
 
 ## Owner direction
 
-Capture this from the user's ordinary brief or `/design`; do not require every field or a separate approval step. Keep explicit choices separate from agent-proposed details. Preserve it across bootstrap/resume; revise only what the current request supersedes.
+From the owner's brief (own words, condensed):
 
-- Owner-stated style / design system:
-- Exact brand colors and intended roles:
-- Theme(s), typography, density, shape, motion, RTL/locales:
-- Must keep / avoid:
-- Agent-proposed details / unresolved choices:
-- Canonical code token source (path; unknown until inspected or implemented):
+- Style: playful, colorful, energetic, friendly; "cute without looking childish"; academically credible.
+- Purpose: help a student who is weak in physics understand and practise Physics II; the finished site
+  must be substantially more useful for learning than the raw notes.
+- Not generic: no SaaS dashboard look, no repeated identical cards, no blind gradients/glassmorphism,
+  no "AI landing page" aesthetics.
+- Language: primarily Persian, RTL, proper mathematical typesetting.
+- Delivery: fully static, GitHub Pages compatible, fast, offline-safe, accessible, responsive.
+- Attribution: footer must show `ساخته شده توسط دانیال رشیدی` and `imdanialrashidi.github.io`.
 
-Before implementation, semantic values below specify the intended palette; distinguish owner-stated values from proposed details. After implementation, the code token source owns resolved values; this document owns intent and token mappings. Update both for an accepted design change. Never maintain a second competing palette. Color/style choices here affect the product, not Pi's terminal theme.
+Colors, exact radii, type scale, motion tokens and the two signature elements below are
+**agent-proposed**, not owner-approved. They are recorded so later changes stay coherent.
 
 ## Experience brief
 
-- Product / surface:
-- Primary audience:
-- Single job of this surface:
-- Desired user feeling before → after:
-- Success signal:
-
-## Brand character
-
-Describe useful tensions rather than vague adjectives.
-
-- [character], not [failure mode]
-- [character], not [failure mode]
-- [character], not [failure mode]
-
-## Reference calibration
-
-| Reference / local image | Owner preference | Adopt / avoid and reason | Inspection status |
-|---|---|---|---|
-|  | liked / disliked / unspecified |  | inspected / not inspected |
-
-Use a few relevant examples when supplied; do not invent owner approval or visual observations. Judge the rendered result against these preferences and record concrete mismatches, not a generic beauty score. References calibrate principles; they are not permission to clone another product.
+- Surface: a personal, single-subject learning site (course + tutor + practice lab).
+- Primary audience: one undergraduate student who finds physics intimidating and forgets formulas.
+- Single job: turn "I don't understand this" into "I can solve this".
+- Feeling before → after: from "این اصلاً به من ربطی ندارد" to "می‌فهمم چرا این فرمول اینجاست".
+- Success signal: the learner completes a concept, sees the physics change in a figure they control,
+  and scores on the practice items for that concept.
 
 ## Direction
 
-- Visual thesis:
-- Signature element:
-- Aesthetic risk or intentional restraint:
-- What must feel familiar:
-- What must never look generic:
+- Visual thesis: **دفتر آزمایشگاه روی میز** — a warm lab notebook where physics is drawn, not a
+  dashboard that reports on physics. Paper, grid, ink and hand-placed vector arrows.
+- Signature elements (two, deliberately):
+  1. **خط‌کش میدان (field ruler)** — the 28 px graph-paper grid plus faint coordinate axes used behind
+     the hero, cards and figures, so every screen belongs to the same notebook.
+  2. **نوار بار (charge ribbon)** — progress shown as a row of small charge dots plus `۳/۴۷`, never a
+     generic percentage bar; it also decorates the concept header as faint field-line circles.
+- Restraint: one accent per lecture part, flat paper surfaces, shadows used only to lift paper off
+  paper; no gradients except the two motivated ones (hero wash, concept-header field wash).
+- Never generic: no stock hero image, no glassmorphism, no three-identical-card rows without a
+  reason, no lorem-style "Features" grid.
 
-## Semantic tokens
+## Semantic tokens (agent-proposed values)
 
-### Color
+Canonical code tokens: `app/styles/main.css` (`:root`). Contrast pairs measured from those tokens.
 
-Use only required roles/themes. Values must be exact (for example HEX or OKLCH), not just “green”. If the user supplied only a color name, label the chosen value as proposed. Record actual foreground/background pairs and measured ratios; leave unmeasured contrast unproven.
-
-| Role / state | Theme | Exact value or resolved code token | Foreground/background pair | Contrast proof |
+| Role | Token | Value | Pair | Contrast |
 |---|---|---|---|---|
-| canvas / surface |  |  |  |  |
-| text / muted text |  |  |  |  |
-| action / on-action |  |  |  |  |
-| accent |  |  |  |  |
-| border / focus |  |  |  |  |
-| danger / success / warning |  |  |  |  |
+| canvas / surface | `--paper`, `--paper-2` | `#f7f2e7`, `#fffdf6` | body text on canvas | ≈ 14.5:1 |
+| text / muted | `--ink`, `--ink-2`, `--ink-3` | `#191a2e`, `#454964`, `#656a86` | ink-3 on paper-2 | ≈ 5.0:1 |
+| action / on-action | `--primary`, `--on-primary` | `#4c35d6`, `#ffffff` | button label | ≈ 8.2:1 |
+| positive charge | `--pos`, `--pos-ink` | `#e13b2b`, `#b3271c` | pos-ink on paper-2 | ≈ 5.8:1 |
+| negative charge | `--neg`, `--neg-ink` | `#1e7be8`, `#11529c` | neg-ink on paper-2 | ≈ 6.8:1 |
+| accent (teal, Gauss) | `--teal`, `--teal-ink` | `#0e8f80`, `#0a6b5f` | teal-ink on paper-2 | ≈ 5.6:1 |
+| accent (magenta, magnetism) | `--magenta`, `--magenta-ink` | `#d2266f`, `#a81857` | magenta-ink on paper-2 | ≈ 6.1:1 |
+| focus | `--primary` | `#4c35d6` | 3 px outline, 2 px offset | ≥ 3:1 non-text |
+| success / warning / danger | `--success-ink`, `--warning`, `--danger` | `#0a6b52`, `#a4610a`, `#c0281c` | on paper-2 | ≥ 5:1 |
 
-### Typography
+Lecture-part accents (also agent-proposed), used as `--part-hue` with a `--part-tint` companion:
 
-| Role | Family / fallback | Scale / weight / leading | Purpose |
+| Part | Hue | Tint | Glyph |
 |---|---|---|---|
-| display |  |  |  |
-| body |  |  |  |
-| utility / data |  |  |  |
+| ۱ بار و میدان | `#1e7be8` | `#e8f1fd` | field arrows |
+| ۲ گاوس | `#0e8f80` | `#e2f5f2` | sphere |
+| ۳ پتانسیل و خازن | `#b45309` | `#fbf0e0` | plates |
+| ۴ جریان و مدار | `#ea580c` | `#fdeee1` | circuit |
+| ۵ مغناطیس | `#d2266f` | `#fce8f1` | magnet |
 
-Record font source and license. Define a fallback that preserves hierarchy and metrics acceptably.
+Saturation rules: `--pos`/`--neg`/`--teal`/`--magenta` are graphic colours (dots, arrows, borders);
+the matching `-ink` variants are the only ones allowed for small text.
 
-### Geometry and depth
+## Typography
 
-- Spacing/rhythm:
-- Grid/content measure:
-- Radius logic:
-- Border/shadow logic:
-- Icon/media treatment:
+| Role | Family | Scale / weight | Purpose |
+|---|---|---|---|
+| display | Vazirmatn Variable | 800–900, `clamp(1.9rem → 3rem)` | page and section titles |
+| body | Vazirmatn Variable | 420, 17 px / 1.85, measure 68ch | Persian teaching prose |
+| utility | Vazirmatn Variable | 600–700, 0.78–0.9rem | pills, meta, controls |
+| math | KaTeX | 1.08em, `.math-block` LTR-isolated | every formula |
 
-### Media and art direction
+Font source: `@fontsource-variable/vazirmatn@5.3.0` (OFL), bundled locally — no runtime font CDN.
+Fallback stack: `Vazirmatn, IRANSans, Segoe UI, Tahoma, system-ui`. Math is always KaTeX and always
+rendered at build time, so formulas never reflow after paint and read correctly with JS disabled.
 
-- Photography / illustration / data-visualization language:
-- Subject, framing, crop, lighting, texture, and color treatment:
-- Icon family and stroke/fill rules:
-- Asset source, ownership/license, and attribution:
-- Responsive art direction and meaningful alt-text rules:
-- Fallback when the preferred asset cannot load:
+## Geometry and depth
+
+- Spacing scale: 4/8/12/18/28/44/68 px (`--space-1…7`); section rhythm uses 28–44 px, page padding 18 px.
+- Radius: 8 px controls, 14 px cards, 22 px feature surfaces; pills are fully round.
+- Depth: `--shadow-1/2/3` are paper lifts (1–3 px hard edge + long soft falloff), never glows.
+- Borders: 1.5 px `--line`; one part-coloured 5–7 px edge marks the part of the current section.
+- Icons: hand-authored inline SVG glyph set (`app/build/render.mjs`), 1.4–2 px strokes, no icon font.
+
+## Media and art direction
+
+- Figures are drawn with canvas 2D from the physics core; no raster images anywhere on the site.
+- Every figure ships a text fallback (`visual.fallback`) that states the same idea in prose, so the
+  learning never depends on seeing pixels.
+- Illustrations are schematic: grid background, two-tone charges, labelled arrows — never decorative
+  or stock.
+- Asset licensing: Vazirmatn (OFL), KaTeX fonts (MIT), own SVG/canvas art.
 
 ## Composition and responsiveness
 
-- Desktop composition:
-- Mobile recomposition:
-- Dense/long-content behavior:
-- Supported viewport/device baseline:
-- RTL/localization behavior:
+- Desktop: 1180 px shell; concept pages are content + 288 px sticky sidebar (TOC, prerequisites,
+  formula index); hub pages use auto-fill grids.
+- 1080 px: sidebar drops below the article as a three-column support row (article stays first).
+- 880 px: hero stacks with the figure first, nav becomes a single horizontally scrollable row,
+  lesson head drops its emblem column.
+- 560 px: single column, tighter spacing, one-column simulation gallery, quiz options wrap.
+- Long formulas scroll inside `.math-block` / `.math-inline` instead of pushing the page wide.
+- RTL: `dir="rtl"` on `<html>`, logical properties throughout, Latin runs (`imdanialrashidi.github.io`,
+  math, units) isolated with `direction: ltr; unicode-bidi: isolate`.
 
 ## Components and states
 
-| Component / pattern | Variants | Required states | Reuse or change |
+| Component | Variants | Required states | Note |
 |---|---|---|---|
-|  |  | default / hover / focus / active / disabled / error |  |
+| concept card | part hue, difficulty dots | hover lift, filtered hidden | filters use the `hidden` attribute |
+| formula card | compact (side index) / full | copy → "کپی شد ✓" → back | clipboard failure shows "کپی ناموفق" |
+| step (example) | closed / open / all-open | `details` + reveal-all + reset | works with JS disabled |
+| quiz item | mcq / numeric | unanswered, correct, wrong, invalid | explanation opens after any answer |
+| simulation | canvas figure | loading, interactive, fallback text | failure keeps the prose fallback |
+| callout | tip, supplement, lost, source | collapsed/expanded | "lost" is always reachable |
+| search dialog | open / empty result / no index | keyboard `/`, Esc, focus return | focus trap while open |
+| empty state | explorer, formulas, glossary, search | message + recovery hint | never a blank grid |
+| progress panel | stored / storage unavailable | lists both states | says "فقط تا بستن صفحه" when storage fails |
 
-Required journey states:
-
-- loading:
-- empty:
-- error/retry:
-- success:
-- permission/offline where relevant:
+Journey states: loading (figure placeholder text), empty (search + filters), error (simulation
+fallback, clipboard), success (copy, quiz score, "این مفهوم تمام شد"), offline (no storage needed).
 
 ## Motion and feedback
 
-- Orchestrated moment (or explicit none):
-- State-transition motion:
-- Duration/easing tokens:
-- Reduced-motion alternative:
-- Sound/haptics where applicable:
+- Orchestrated moment: the home hero canvas animates the two-charge field; simulations animate only
+  while they teach (drift, RC, magnetic path) and always offer play/pause/reset.
+- State transitions: 120–160 ms colour/transform; no layout animation.
+- Reduced motion: `prefers-reduced-motion` stops the hero loop, disables transitions, and figures
+  still render a correct static frame (proved by a browser test).
 
 ## Content voice
 
-- Vocabulary and tone:
-- Action-label rules:
-- Error and empty-state rules:
-- Realistic content fixtures:
+- Vocabulary: Persian term + English scientific term on first use (`میدان الکتریکی (Electric Field)`),
+  then Persian only. Terminology matches the notes.
+- Tone: plain, direct, encouraging; never babyish, never robotic. Explain before naming.
+- Action labels: verb-first Persian ("بررسی پاسخ", "فهمیدم، این مفهوم تمام شد").
+- Error/empty copy always offers the next step instead of apologising.
 
 ## Quality budgets
 
-- Accessibility target: WCAG 2.2 AA unless the product accepts another target.
-- Text/non-text contrast target:
-- Keyboard/focus/touch target:
-- Performance target: LCP ≤ 2.5 s, INP ≤ 200 ms, CLS ≤ 0.1 at p75 unless stricter product budgets are accepted.
-- Pre-release lab budget and production RUM/rollout proof:
-- Image/font/JS budget:
-- Supported browsers and input modes:
+- Accessibility: WCAG 2.2 AA; keyboard path for search, quiz, steps, dialogs; 3 px focus ring.
+- Contrast: text ≥ 4.5:1, non-text ≥ 3:1 (values above are measured from the shipped tokens).
+- Performance: first-party JS ≤ 15 kB gzip per page entry plus lazily loaded chunks; CSS ≈ 16 kB gzip;
+  fonts only for glyphs actually used; no third-party runtime requests at all.
+- Target: LCP ≤ 2.5 s, INP ≤ 200 ms, CLS ≤ 0.1 on a mid-range phone over 4G (design budget, measured
+  locally only — see the report).
+- Browsers: current Chrome/Edge/Firefox/Safari desktop and mobile; RTL text tested at 360 px.
 
 ## Screen acceptance
 
-| Flow / screen | Critical states | Viewports/locales | Visual proof |
+| Flow / screen | Critical states | Viewports | Proof |
 |---|---|---|---|
-|  |  |  |  |
+| home | hero, ladder, next-concept, weak areas | 1360, 390 | `tests/browser/site.spec.mts` + screenshots |
+| part page | concept list, part completion | 1360 | browser test |
+| concept page | five layers, rescue, steps, quiz | 1360, 390 | browser test + screenshot |
+| simulation gallery | 14 figures, controls, fallback | 1360, 390 | browser test + screenshot |
+| formulas / concepts / glossary | filter, empty state | 1360 | browser test |
+| practice | wrong answer, retry, persistence | 1360, 390 | browser test |
+| map | prerequisite chain | 1360 | browser test |
+| 404 | unknown deep link | 1360 | browser test |
 
 ## Decisions intentionally deferred
 
--
+- Dark theme (tokens exist structurally; not requested and unverified for contrast).
+- Offline service worker (no third-party runtime dependency is required today; caching is deferred).
+- Print/PDF export of a part.
 
 ## Decision log
 
 | Date | Decision | Evidence / rationale | Revisit when |
 |---|---|---|---|
-|  |  |  |  |
+| 2026-10-03 | Vite + vanilla TypeScript + build-time KaTeX, no UI framework | owner asked for lightweight/static; bundle stays ≈ 4 kB gzip per chunk | if interactive complexity outgrows hand-written modules |
+| 2026-10-03 | Content authored as `.mjs` data, not Markdown-at-runtime | build-time coverage check is the real integrity guarantee | never |
+| 2026-10-03 | Field-ruler grid + charge ribbon as the two signatures | owner asked for "distinctive, not generic"; both are physics-derived, not decorative | if a third motif is introduced, retire one |
+| 2026-10-03 | §6.1 arithmetic slip in the notes shown as a marked correction | re-derived value 5.63×10⁷ N/C; the note's own line is inconsistent | if the owner prefers silent alignment with the note |
