@@ -32,16 +32,19 @@ venv/
 vendor/
 
 # Build, test, browser, and framework output
-dist/
-build/
-coverage/
-target/
-.next/
-.turbo/
-.vite/
-.artifacts/
-playwright-report/
-test-results/
+# Anchored to the repository root on purpose. An unanchored `build/` also matches any directory
+# named `build` at any depth, which silently excluded `app/build/` — the static page generator that
+# `npm run build` and `tests/site/*` import. That made a clean checkout unbuildable.
+/dist/
+/build/
+/coverage/
+/target/
+/.next/
+/.turbo/
+/.vite/
+/.artifacts/
+/playwright-report/
+/test-results/
 *.log
 
 # Editors / OS
