@@ -16,7 +16,9 @@ concurrency:
 jobs:
   workflow-doctor:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    # 5 minutes was enough before the browser step existed; `npx playwright install --with-deps`
+    # downloads Chromium and its system libraries, and the whole job still has to finish the build.
+    timeout-minutes: 10
 
     steps:
       - name: Checkout
@@ -32,6 +34,11 @@ jobs:
       # placeholder package and the job fails with "This is not the tsc command you are looking for".
       - name: Install dependencies
         run: npm ci
+
+      # The verify chain ends in the Playwright P0 browser check. GitHub runners ship no
+      # browsers, so without this step the run dies at "Executable doesn't exist ... chromium".
+      - name: Install Chromium for the browser rendering check
+        run: npx playwright install --with-deps chromium
 
       - name: Validate template
         run: bash scripts/verify.sh

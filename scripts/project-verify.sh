@@ -14,13 +14,15 @@ node --test tests/site/physics.test.ts tests/site/content-integrity.test.mjs tes
 echo "→ numerical content audit (P0 correctness gate)"
 node app/build/numeric-audit.mjs
 
-echo "→ note coverage report"
-node app/build/build.mjs --coverage-only
-
 echo "→ static build"
 # Mirrors the Pages workflow: the 404 page is served at arbitrary URLs, so it is built against the
 # absolute deployment base. Everything else stays depth-relative.
 SITE_BASE=/physics2 npm run build
+
+echo "→ note coverage report"
+# After the build, not before it: `build.mjs` reads the Vite manifest on every run, so on a clean
+# checkout a coverage-first order died with "Vite manifest not found" before anything was built.
+node app/build/build.mjs --coverage-only
 
 echo "→ GitHub Pages sub-path check"
 node scripts/check-subpath-build.mjs
