@@ -26,10 +26,80 @@ test('home renders the learning map and links into part 1', async ({ page }) => 
   await expect(page.locator('.footer-made')).toHaveText('ساخته شده توسط دانیال رشیدی');
   await expect(page.locator('.footer-domain')).toHaveText('imdanialrashidi.github.io');
 
-  await page.getByRole('link', { name: 'شروع از پارت اول' }).click();
+  await page.getByRole('link', { name: 'شروع یادگیری' }).click();
   await expect(page).toHaveURL(/lessons\/part-1\//);
   await expect(page.getByRole('heading', { level: 1 })).toContainText('بار الکتریکی و میدان الکتریکی');
   expect(consoleErrors).toEqual([]);
+});
+
+/**
+ * One obvious next action, and it must be visible before the phone has to scroll.
+ *
+ * The home page used to offer three same-weight buttons and put the 296 px hero figure *above* the
+ * title, so the only primary CTA started at y ≈ 795 px on a 390×844 screen. This pins the decision
+ * itself rather than the styling: exactly one primary control in the hero, named as the owner asked,
+ * and the whole promise — kicker, title, lede, button — inside the first screen.
+ */
+test('the home page offers one primary action, above the phone fold', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await open(page, '/');
+
+  const cta = page.locator('.hero-cta');
+  await expect(cta).toHaveCount(1);
+  await expect(cta).toHaveText('شروع یادگیری');
+  await expect(cta).toHaveAttribute('href', /lessons\/part-1\//);
+  // Nothing else in the hero may wear the primary treatment.
+  await expect(page.locator('.hero .primary-button')).toHaveCount(1);
+
+  const boxes = await page.evaluate(() => {
+    const box = (selector: string) => {
+      const node = document.querySelector(selector);
+      if (!node) return null;
+      const rect = node.getBoundingClientRect();
+      return { top: Math.round(rect.top), bottom: Math.round(rect.bottom) };
+    };
+    return {
+      kicker: box('.hero-kicker'),
+      title: box('.hero h1'),
+      lede: box('.hero-lede'),
+      cta: box('.hero-cta'),
+      figure: box('.hero-visual'),
+      viewport: window.innerHeight,
+    };
+  });
+  for (const part of ['kicker', 'title', 'lede', 'cta'] as const) {
+    expect(boxes[part], `hero ${part} missing`).not.toBeNull();
+    expect(boxes[part]!.bottom, `hero ${part} is below the fold`).toBeLessThanOrEqual(boxes.viewport);
+  }
+  // The copy leads the figure on a phone, so the first screen states the promise, not a picture.
+  expect(boxes.cta!.bottom).toBeLessThan(boxes.figure!.top);
+});
+
+/**
+ * The maker's band is a product signature, not legal text.
+ *
+ * It has to survive on every page, name the creator in words, and offer both identity links as real
+ * links — `@imdanialrashidi` to Telegram, which is an owner-stated requirement with no other source.
+ */
+test('the creator signature names the maker and links to Telegram on every page', async ({ page }) => {
+  for (const route of ['/', '/concept/coulomb/', '/formulas/']) {
+    await open(page, route);
+    const band = page.locator('.maker-band');
+    await expect(band).toBeVisible();
+    await expect(band.locator('.footer-made')).toHaveText('ساخته شده توسط دانیال رشیدی');
+    await expect(band.locator('.footer-domain')).toHaveText('imdanialrashidi.github.io');
+    await expect(band.locator('.footer-domain')).toHaveAttribute('href', 'https://imdanialrashidi.github.io');
+    const telegram = band.locator('.maker-link-telegram');
+    await expect(telegram).toHaveText('@imdanialrashidi');
+    await expect(telegram).toHaveAttribute('href', 'https://t.me/imdanialrashidi');
+    // Prominent, not a footnote: the name is real text in the band, and the links are thumb-sized.
+    const size = await band.locator('.footer-made').evaluate((node) => Number.parseFloat(getComputedStyle(node).fontSize));
+    expect(size, `maker name is ${size}px`).toBeGreaterThanOrEqual(15);
+    for (const link of await band.locator('.maker-link').all()) {
+      const box = await link.boundingBox();
+      expect(box!.height, 'maker link is not touchable').toBeGreaterThanOrEqual(44);
+    }
+  }
 });
 
 test('concept page teaches in layers and keeps a readable formula', async ({ page }) => {

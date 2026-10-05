@@ -57,7 +57,7 @@ export const questions = [
     id: 'p2-gauss-2',
     type: 'numeric',
     concepts: ['gauss-law', 'gaussian-surface'],
-    prompt: String.raw`شار میدان الکتریکی از یک سطح گاوسی $3\times10^{-6}\,\text{N·m}^2/\text{C}$ است. بار خالص داخل آن چند میکروکولن است؟`,
+    prompt: String.raw`شار میدان الکتریکی از یک سطح گاوسی $3\times10^{-6}\,\text{N}\cdot\text{m}^2/\text{C}$ است. بار خالص داخل آن چند میکروکولن است؟`,
     answer: 2.66,
     unit: 'µC',
     tolerance: 0.02,
@@ -256,7 +256,7 @@ $$
           en: 'Electric flux',
           latex: String.raw`\Phi_E = \int \vec E \cdot d\vec A`,
           symbols: [
-            { sym: String.raw`\Phi_E`, meaning: 'شار میدان از سطح بسته', unit: String.raw`$\text{N·m}^2/\text{C}$` },
+            { sym: String.raw`\Phi_E`, meaning: 'شار میدان از سطح بسته', unit: String.raw`$\text{N}\cdot\text{m}^2/\text{C}$` },
             { sym: String.raw`d\vec A`, meaning: 'بردار سطح کوچک با واحد سطح', unit: String.raw`$\text{m}^2$` },
           ],
           interpretation: String.raw`اندازه‌ی «میدان عبوری» از یک سطح؛ مثل حجم آبی که از یک در بیرون می‌ریزد.`,
@@ -278,7 +278,7 @@ $$
           rearrangements: [{ latex: String.raw`q_{net} = \varepsilon_0 \Phi_E`, note: 'شار را بدهیم، بار داخل پیدا می‌شود' }],
           notes: [
             String.raw`دقت کن: $\vec E\cdot d\vec A$ با علامت می‌نویسیم؛ اگر میدان به داخل باشد، شار منفی می‌شود.`,
-            String.raw`واحب شار $\text{N·m}^2/\text{C}$ است — اگر به دست آمد، احتمالاً در تبدیل واحد اشتباه کرده‌ای.`,
+            String.raw`واحب شار $\text{N}\cdot\text{m}^2/\text{C}$ است — اگر به دست آمد، احتمالاً در تبدیل واحد اشتباه کرده‌ای.`,
           ],
         },
       ],

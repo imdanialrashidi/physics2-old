@@ -3,13 +3,6 @@ import { loadCourseIndex } from './course-index.ts';
 import { el, fa, q } from './dom.ts';
 import { store } from './store.ts';
 
-function tile(heading: string, note: string, link?: { href: string; label: string }): HTMLElement {
-  const card = el('article', { class: 'start-card' });
-  card.append(el('h3', { text: heading }), el('p', { text: note }));
-  if (link) card.append(el('a', { class: 'inline-link', href: link.href, text: link.label }));
-  return card;
-}
-
 export async function nextCard(slot: HTMLElement, fallbackId: string | null): Promise<void> {
   const state = store.get();
   const entries = await loadCourseIndex();
@@ -26,8 +19,12 @@ export async function nextCard(slot: HTMLElement, fallbackId: string | null): Pr
 
   slot.hidden = false;
   slot.replaceChildren();
+  // The slot ships the first-concept card as its no-JS fallback, so with scripting on it now holds
+  // one card of the same chrome instead of a second, differently weighted panel beside it.
+  const card = el('article', { class: 'start-card start-card-next' });
+  slot.append(card);
   if (nextConcept) {
-    slot.append(
+    card.append(
       el('h3', { text: 'بعدی برای تو' }),
       el('p', { class: 'start-title', text: nextConcept.title }),
       el('p', {
@@ -39,7 +36,7 @@ export async function nextCard(slot: HTMLElement, fallbackId: string | null): Pr
       el('a', { class: 'inline-link', href: `${prefix}${nextConcept.href}`, text: 'رفتن به درس ←' }),
     );
   } else {
-    slot.append(el('h3', { text: 'ادامه‌ی مسیر' }), el('p', { text: 'همه‌ی مفاهیم تمام شده‌اند — به آزمون ترکیبی سر بزن.' }));
+    card.append(el('h3', { text: 'ادامه‌ی مسیر' }), el('p', { text: 'همه‌ی مفاهیم تمام شده‌اند — به آزمون ترکیبی سر بزن.' }));
   }
 
   // 2. Recently studied concepts, so a long session can be picked up again.
@@ -48,11 +45,11 @@ export async function nextCard(slot: HTMLElement, fallbackId: string | null): Pr
   const seen = state.recent.map((item) => byId.get(item.id)).filter(Boolean).slice(0, 5);
   trailSlot.replaceChildren();
   if (!seen.length) {
+    // Nothing studied yet: the empty-state hint stays, but it is not given a card of its own so the
+    // section keeps one clear next action instead of two competing panels.
     trailSlot.append(
-      tile('هنوز چیزی باز نکرده‌ای', 'هر مفهومی که باز کنی، اینجا می‌ماند تا بعداً راحت برگردی.', {
-        href: `${prefix}concepts/`,
-        label: 'دیدن نمایه‌ی مفاهیم ←',
-      }),
+      el('p', { class: 'start-note', text: 'هنوز چیزی باز نکرده‌ای. هر مفهومی که باز کنی، اینجا می‌ماند تا بعداً راحت برگردی.' }),
+      el('a', { class: 'inline-link', href: `${prefix}concepts/`, text: 'دیدن نمایه‌ی مفاهیم ←' }),
     );
     return;
   }
@@ -66,7 +63,5 @@ export async function nextCard(slot: HTMLElement, fallbackId: string | null): Pr
       ),
     );
   }
-  trailSlot.append(
-    el('article', { class: 'start-card' }, [el('h3', { text: 'آخرین‌هایی که دیدی' }), list]),
-  );
+  trailSlot.append(el('h3', { class: 'start-note-title', text: 'آخرین‌هایی که دیدی' }), list);
 }

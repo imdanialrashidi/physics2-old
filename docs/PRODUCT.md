@@ -64,7 +64,7 @@ Short durable source of truth for what the Physics II learning site must do.
 
 ## Performance and UX budgets
 
-- Page budget: CSS ≈ 16 kB gzip, entry JS ≤ 15 kB gzip, figures lazily imported per page.
+- Page budget: CSS ≤ 18 kB gzip, entry JS ≤ 15 kB gzip, figures lazily imported per page.
 - Network baseline: works after first load on any connection; no third-party requests.
 - Accessibility target: WCAG 2.2 AA.
 - Brand character: playful and colourful, not childish; academically credible, not corporate.

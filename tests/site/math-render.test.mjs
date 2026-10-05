@@ -33,3 +33,31 @@ test('broken LaTeX is reported rather than silently rendered', () => {
   assert.match(html, /katex-error/, 'the failure is visible in the markup');
   assert.equal(mathProblems().length, 1);
 });
+
+test('a character KaTeX cannot typeset is reported, not painted as text', () => {
+  // `\text{N·m}` with a raw U+00B7 is not typeset by KaTeX: it paints `\cdotp` in the error colour
+  // and the shipped unit read `N\cdottpm²`. The first check only looked for `katex-error`, so this
+  // shipped silently; this pins the second signal.
+  mathProblems().length = 0;
+  const html = renderLatex(String.raw`\text{N·m}^2`, { display: false });
+  assert.match(html, />\\[a-zA-Z]+</, 'the unsupported character is painted as a command');
+  assert.equal(mathProblems().length, 1);
+  // The supported spelling is clean.
+  mathProblems().length = 0;
+  const good = renderLatex(String.raw`\text{N}\cdot\text{m}^2`, { display: false });
+  assert.doesNotMatch(good, />\\[a-zA-Z]+</);
+  assert.deepEqual(mathProblems(), []);
+});
+
+test('display formulas joined by a wide gap are stacked into readable lines', () => {
+  // Measured at 390 px, one line like this lost 172 CSS px off an internally scrollable box.
+  const stacked = renderLatex(String.raw`q(t) = C\varepsilon(1-e^{-t/RC}),\qquad V_C = \varepsilon(1-e^{-t/RC})`, { display: true });
+  assert.match(stacked, /class="math-stack"/);
+  assert.equal((stacked.match(/class="math-block"/g) ?? []).length, 2);
+  // No stray text between the lines: array interpolation used to emit a comma that the grid turned
+  // into a third row holding one lone comma.
+  assert.equal(stacked.replace(/<div class="math-stack"[^>]*>/, '').replace(/<\/div>$/, '').includes('</div>,'), false);
+  assert.match(stacked, /aria-label="q\(t\) = /, 'the whole source stays as the accessible name');
+  // A single equation is untouched.
+  assert.doesNotMatch(renderLatex(String.raw`F = kvB\sin\theta`, { display: true }), /math-stack/);
+});

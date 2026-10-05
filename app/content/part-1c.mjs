@@ -156,7 +156,7 @@ $$
           en: 'Electric dipole moment',
           latex: String.raw`\vec p = q\,\vec d,\qquad p = qd`,
           symbols: [
-            { sym: String.raw`\vec p`, meaning: 'گشتاور دوقطبی؛ از قطب منفی به مثبت', unit: String.raw`$\text{C·m}$` },
+            { sym: String.raw`\vec p`, meaning: 'گشتاور دوقطبی؛ از قطب منفی به مثبت', unit: String.raw`$\text{C}\cdot\text{m}$` },
             { sym: String.raw`q`, meaning: 'اندازه‌ی بار هر قطب', unit: 'C' },
             { sym: String.raw`\vec d`, meaning: 'بردار از قطب منفی به قطب مثبت', unit: 'm' },
           ],
@@ -202,7 +202,7 @@ $$
           title: 'میدان دوقطبی روی محور',
           problem: String.raw`دوقطبی با $q=3\,\mu C$ و $d=2\,cm$. میدان را در فاصله‌ی $r=30\,cm$ روی محور حساب کنید.`,
           steps: [
-            { label: 'گام ۱ — گشتاور', body: String.raw`$p = qd = (3\times10^{-6})(0.02) = 6\times10^{-8}\,\text{C·m}$`},
+            { label: 'گام ۱ — گشتاور', body: String.raw`$p = qd = (3\times10^{-6})(0.02) = 6\times10^{-8}\,\text{C}\cdot\text{m}$`},
             { label: 'گام ۲ — میدان', body: String.raw`$E = \frac{p}{2\pi\varepsilon_0 r^3} = \frac{6\times10^{-8}}{2\pi\times8.85\times10^{-12}\times0.027} \approx 4.0\times10^{4}\,\text{N/C}$`},
             { label: 'گام ۳ — جهت', body: String.raw`روی محور و در سمت قطب مثبت، میدان هم‌جهت $\vec p$ است (به بیرون).`},
           ],

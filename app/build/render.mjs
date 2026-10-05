@@ -7,6 +7,8 @@ export const SITE = {
   tagline: 'یک کتاب تعاملی فارسی برای یادگیری عمیق فیزیک ۲',
   author: 'ساخته شده توسط دانیال رشیدی',
   authorUrl: 'imdanialrashidi.github.io',
+  telegram: '@imdanialrashidi',
+  telegramUrl: 'https://t.me/imdanialrashidi',
   origin: 'https://imdanialrashidi.github.io/physics2/',
 };
 
@@ -46,6 +48,9 @@ export function glyph(name, size = 20) {
     play: '<path d="M4.5 2.6 13 8l-8.5 5.4z" fill="currentColor"/>',
     pause: '<path d="M5 3h2v10H5zM9 3h2v10H9z" fill="currentColor"/>',
     reset: '<path d="M13 8a5 5 0 1 1-1.6-3.7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M13 1.6V4.6H10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
+    // The maker band's Telegram mark: a paper plane in the site's own icon language, painted in the
+    // existing `--neg` blue so the identity link adds no new hue to the palette.
+    send: '<path d="M15.2 1 1.2 6.9l4.7 1.9 1.8 5.2 2.6-3.3 3.5 2.6z" fill="currentColor"/><path d="m5.9 8.8 8-6.4-6.5 7.2" fill="none" stroke="var(--paper-2)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>',
   };
   return `<svg class="glyph" viewBox="0 0 16 16" width="${size}" height="${size}" aria-hidden="true" focusable="false">${paths[name] ?? paths.field}</svg>`;
 }
@@ -138,6 +143,8 @@ ${assets.css ? `<link rel="stylesheet" href="${assets.css}">` : ''}
       </button>
       <div class="progress-panel" id="progress-panel" data-progress-panel hidden></div>
     </div>
+    ${navToggle()}
+    <nav class="site-nav" id="site-nav-panel" aria-label="ناوبری اصلی">${nav}</nav>
   </div>
 </header>
 <main id="main">${body}</main>
@@ -147,6 +154,35 @@ ${footer()}
 <script type="module" src="${assets.js}"></script>
 </body>
 </html>`;
+}
+
+/**
+ * Phone menu trigger.
+ *
+ * The owner asked for it at the inline end — the left in RTL. It is the last item of the header row
+ * visually, and sits in the DOM straight before the panel it discloses, so keyboard order follows the
+ * reading order: logo → search → progress → menu → the links the menu reveals. Visual order is set
+ * with `order`, which keeps that true on the desktop row as well.
+ *
+ * The glyph is this site's own rather than a stock hamburger: two field lines with a double-headed
+ * axis between them, the field motif of the part badges and the concept header at menu scale. Three
+ * lines still read as a menu at 20 px; arrowheads on every line turned to noise when they were
+ * tried. `aria-label` always mirrors the visible word, because below 560 px the label is visually
+ * hidden and the open/closed state would otherwise live in a shape and a colour alone.
+ */
+function navToggle() {
+  return `<button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="site-nav-panel" aria-label="فهرست">
+      <svg class="nav-toggle-glyph" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" focusable="false">
+        <g class="nav-glyph-list" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 5.4h14M3 14.6h14M4.4 10h11.2"/>
+          <path d="M4.2 8.5 2 10l2.2 1.5M15.8 8.5 18 10l-2.2 1.5" stroke-width="1.5"/>
+        </g>
+        <g class="nav-glyph-close" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+          <path d="M5.6 5.6 14.4 14.4M14.4 5.6 5.6 14.4"/>
+        </g>
+      </svg>
+      <span class="nav-toggle-label" data-nav-label>فهرست</span>
+    </button>`;
 }
 
 function footer() {
@@ -166,12 +202,32 @@ function footer() {
       <a href="map/">نقشه‌ی یادگیری</a>
       <a href="glossary/">واژه‌نامه</a>
     </nav>
-    <div class="footer-signature">
-      <p class="footer-made">${SITE.author}</p>
-      <a class="footer-domain" href="https://${SITE.authorUrl}" rel="noopener">${SITE.authorUrl}</a>
-    </div>
   </div>
+  ${makerBand()}
 </footer>`;
+}
+
+/**
+ * The maker's mark.
+ *
+ * A colophon, not a legal line: the creator is named as a heading, and both identity links are real
+ * links a learner can act on. It closes every page with the same intent, which is what makes it a
+ * product signature rather than a footer notice.
+ */
+function makerBand() {
+  return `<div class="maker-band">
+    <div class="maker-inner">
+      <span class="maker-mark" aria-hidden="true">${logoMark()}</span>
+      <div class="maker-text">
+        <p class="footer-made">${SITE.author}</p>
+        <p class="maker-note">این کتاب تعاملی از روی پنج جزوه‌ی درسی نوشته شده و در مرورگر خودت باز می‌شود؛ اگر جایی گیر کردی یا پیشنهادی داشتی، از تلگرام بنویس.</p>
+      </div>
+      <div class="maker-links">
+        <a class="maker-link maker-link-domain footer-domain" href="https://${SITE.authorUrl}" rel="noopener">${glyph('sphere', 16)}<span>${SITE.authorUrl}</span></a>
+        <a class="maker-link maker-link-telegram" href="${SITE.telegramUrl}" rel="noopener">${glyph('send', 16)}<span>${SITE.telegram}</span></a>
+      </div>
+    </div>
+  </div>`;
 }
 
 /* ------------------------------------------------------------- components */
@@ -220,13 +276,13 @@ export function formulaCard(formula, { compact = false } = {}) {
   const symbols = (formula.symbols ?? [])
     .map(
       (symbol) =>
-        `<div class="symbol-row"><span class="symbol-sym">${renderLatex(symbol.sym, { display: false })}</span><span class="symbol-meaning">${renderInlineProse(symbol.meaning)}</span>${symbol.unit ? `<span class="symbol-unit">${escapeHtml(symbol.unit)}</span>` : ''}</div>`,
+        `<div class="symbol-row"><span class="symbol-sym">${renderLatex(symbol.sym, { display: false })}</span><span class="symbol-meaning">${renderInlineProse(symbol.meaning)}</span>${symbol.unit ? `<span class="symbol-unit">${renderInlineProse(symbol.unit)}</span>` : ''}</div>`,
     )
     .join('');
   const rearrangements = (formula.rearrangements ?? [])
     .map((item) => `<li>${renderLatex(item.latex, { display: false })} <span class="hint">— ${escapeHtml(item.note)}</span></li>`)
     .join('');
-  const notes = (formula.notes ?? []).map((note) => `<li>${renderProse(note)}</li>`).join('');
+  const notes = (formula.notes ?? []).map((note) => `<li>${renderInlineProse(note)}</li>`).join('');
   return `<div class="formula-card" data-formula data-latex="${escapeAttribute(formula.latex)}">
   <div class="formula-head">
     <div>
@@ -236,11 +292,11 @@ export function formulaCard(formula, { compact = false } = {}) {
     <button class="copy-button" type="button" data-copy-formula aria-label="کپی فرمول">کپی</button>
   </div>
   <div class="formula-display">${renderLatex(formula.latex, { display: true })}</div>
-  <p class="formula-interpretation">${renderProse(formula.interpretation)}</p>
+  <div class="formula-interpretation">${renderProse(formula.interpretation)}</div>
   ${compact ? '' : `<dl class="symbol-list">${symbols}</dl>`}
   ${compact ? '' : `<div class="formula-usage">
-    <div class="usage-when"><h5>${glyph('bolt', 14)} کِی استفاده کنم؟</h5><p>${renderProse(formula.whenToUse)}</p></div>
-    <div class="usage-avoid"><h5>${glyph('warn', 14)} کِی استفاده نکنم؟</h5><p>${renderProse(formula.whenNotToUse)}</p></div>
+    <div class="usage-when"><h5>${glyph('bolt', 14)} کِی استفاده کنم؟</h5>${renderProse(formula.whenToUse)}</div>
+    <div class="usage-avoid"><h5>${glyph('warn', 14)} کِی استفاده نکنم؟</h5>${renderProse(formula.whenNotToUse)}</div>
   </div>`}
   ${rearrangements ? `<div class="formula-rearrangements"><h5>بازنویسی‌های مفید</h5><ul>${rearrangements}</ul></div>` : ''}
   ${notes ? `<div class="formula-notes"><h5>نکته‌ها</h5><ul>${notes}</ul></div>` : ''}
@@ -275,18 +331,23 @@ export function stepsBlock(example) {
   </div>
   <details class="example-answer">
     <summary>جواب نهایی را ببین</summary>
-    <div class="example-answer-body">${answerLatex}${renderProse(example.answer.body)}${example.tip ? `<p class="example-tip"><strong>نکته:</strong> ${renderProse(example.tip)}</p>` : ''}</div>
+    <div class="example-answer-body">${answerLatex}${renderProse(example.answer.body)}${example.tip ? `<p class="example-tip"><strong>نکته:</strong> ${renderInlineProse(example.tip)}</p>` : ''}</div>
   </details>
 </div>`;
 }
 
 export function misconceptionsBlock(items) {
   if (!items.length) return '';
+  // A misconception is one sentence, so it renders inline and stays on the row with its mark.
+  // Wrapping the block renderer in `<p>` used to emit
+  // `<p class="wrong"><span class="mark">✕</span><p>…</p></p>`, which the HTML parser repaired by
+  // closing the outer paragraph first: the mark rendered alone on its own 24 px row, the sentence on
+  // the next one, plus an empty paragraph per block.
   const rows = items
     .map(
       (item) => `<li class="misconception">
-    <p class="wrong"><span class="mark mark-wrong" aria-hidden="true">✕</span>${renderProse(item.wrong)}</p>
-    <p class="right"><span class="mark mark-right" aria-hidden="true">✓</span>${renderProse(item.right)}</p>
+    <p class="wrong"><span class="mark mark-wrong" aria-hidden="true">✕</span><span class="misconception-text">${renderInlineProse(item.wrong)}</span></p>
+    <p class="right"><span class="mark mark-right" aria-hidden="true">✓</span><span class="misconception-text">${renderInlineProse(item.right)}</span></p>
   </li>`,
     )
     .join('');
@@ -363,9 +424,9 @@ export function rescueBlock(rescue, concept, prefix) {
   </header>
   <ol class="rescue-steps">
     <li><h4>۱) اول این پیش‌نیاز را ببین</h4>${prereq ? `<p><a class="inline-link" href="${prefix}concept/${prereq}/">${escapeHtml(rescue.prereqTitle ?? 'مفهوم پیش‌نیاز')}</a></p>` : '<p>این مفهوم، نقطه‌ی شروع است و پیش‌نیازی ندارد.</p>'}</li>
-    <li><h4>۲) توضیح ساده‌تر</h4><p>${renderProse(rescue.simpler)}</p></li>
-    <li><h4>۳) به تصویر نگاه کن</h4><p>${renderProse(rescue.visual)}</p></li>
-    <li><h4>۴) یک مثال خیلی کوچک</h4><p><strong>${escapeHtml(rescue.tiny.title)}:</strong> ${renderProse(rescue.tiny.body)}</p></li>
+    <li><h4>۲) توضیح ساده‌تر</h4>${renderProse(rescue.simpler)}</li>
+    <li><h4>۳) به تصویر نگاه کن</h4>${renderProse(rescue.visual)}</li>
+    <li><h4>۴) یک مثال خیلی کوچک</h4><p><strong>${escapeHtml(rescue.tiny.title)}:</strong> ${renderInlineProse(rescue.tiny.body)}</p></li>
   </ol>
   <button type="button" class="primary-button" data-rescue-back>برگشت به همین مفهوم ↑</button>
 </section>`;
