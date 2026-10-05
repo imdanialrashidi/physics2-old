@@ -58,7 +58,8 @@ Hard gates (any failure ⇒ `NOT READY`, craft score is irrelevant):
 6. Loading, empty, error, success and storage-unavailable states are coherent.
 7. No uncaught console error or failed critical request.
 8. Budget: LCP ≤ 2.5 s, INP ≤ 200 ms, CLS ≤ 0.1 as the production target; until field data exists, a
-   repeatable lab baseline is required (entry JS ≈ 4.3 kB gzip, CSS ≈ 15.7 kB gzip, no third-party requests).
+   repeatable lab baseline is required (entry JS 4.7 kB gzip, CSS 18.1 kB gzip measured 2026-10-24,
+   no third-party requests).
 
 Anti-template review (run before calling a visual change done):
 

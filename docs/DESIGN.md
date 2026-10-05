@@ -20,9 +20,46 @@ From the owner's brief (own words, condensed):
   plain hamburger pill it replaced. The placement is the owner's call and is implemented as asked;
   what "better" became — glyph, wording, sheet, tablet behaviour — is mine, below.
 - Attribution: footer must show `ساخته شده توسط دانیال رشیدی` and `imdanialrashidi.github.io`.
+- First screen (2026-10-24, own words): «اولین صفحه برای کاربر جدید خیلی واضح‌تر شود» — the home page's first
+  screen must state what the site is, where to start and what to do next, with **one** obvious primary
+  CTA, `شروع یادگیری`; competing visual elements and dashboard-like density come out. Useful existing
+  content stays, reorganised so the page reads calm and intentional.
+- Personal branding (2026-10-24, own words): `ساخته شده توسط دانیال رشیدی`, `imdanialrashidi.github.io`
+  and `@imdanialrashidi` must be **prominent**, with `@imdanialrashidi` linking to
+  `https://t.me/imdanialrashidi`, and treated as «یک امضای محصول» — a deliberate product signature, not
+  small legal text. Not a portfolio: no project lists, no CV, no biography section.
+- Mobile first (2026-10-24, own words): the whole site — not only the home page — must work on phones,
+  especially header/navigation, lesson pages, formulas, practice, simulations, map and glossary; the
+  widths that matter are 360, 390, 430, 768, 1024 and 1360. Intentional mobile composition rather than a
+  shrunken desktop layout; no accidental horizontal overflow; important controls comfortably touchable
+  (≈ 44 px where practical); nothing essential behind hover; Persian RTL with mixed RTL/LTR maths stays
+  readable.
+- Polish (2026-10-24, own words): keep the lab-notebook / field-ruler / charge-ribbon identity; improve
+  spacing, typography, hierarchy, states, buttons, focus, active/disabled states and restrained
+  transitions; restrained micro-interactions only where they improve feedback; honour
+  `prefers-reduced-motion`; no generic SaaS look, no glassmorphism, no gradient or animation bloat.
 
 Colors, exact radii, type scale, motion tokens and the two signature elements below are
 **agent-proposed**, not owner-approved. They are recorded so later changes stay coherent.
+
+### Token source (canonical)
+
+`app/styles/main.css` `:root` owns every resolved value. This document records intent and role mapping
+only; no second palette exists. Colour decisions made after 2026-10-04 reuse these tokens — the maker
+band and the Telegram mark add **no new colour literal**, only new roles over `--paper-3`, `--ink-2`,
+`--line-strong` and the existing `--neg` blue.
+
+### Composition breakpoints after 2026-10-24 (unchanged numbers, changed intent)
+
+| Width | Header | Home hero | Notes |
+|---|---|---|---|
+| ≥ 881 | one row: brand · nav · search/progress/menu | copy + figure side by side | unchanged |
+| 561–880 | one compact row + floating nav sheet | copy first, figure below as a plate ≤ 520 px | figure-first reversed 2026-10-24 |
+| ≤ 560 | one row, icon-only menu, 44 px controls | copy first, figure below as a plate ≤ 80 % | full-width primary button |
+
+Phones also recompose, rather than shrink: the part ladder becomes a vertical numbered sequence, the
+homepage quick-access grid becomes a notebook index, filter bars give the search field its own row, and
+entry tiles become full-width rows.
 
 ## Experience brief
 
@@ -89,6 +126,18 @@ Font source: `@fontsource-variable/vazirmatn@5.3.0` (OFL), bundled locally — n
 Fallback stack: `Vazirmatn, IRANSans, Segoe UI, Tahoma, system-ui`. Math is always KaTeX and always
 rendered at build time, so formulas never reflow after paint and read correctly with JS disabled.
 
+Two rendering rules keep formulas readable on a 360–430 px phone (2026-10-24):
+
+- **A display line that joins several equations becomes several lines.** `\qquad`, `\Rightarrow` and
+  comma-gaps separate whole equations, so `app/build/math.mjs` splits on them and stacks the parts in
+  `.math-stack`. Measured at 390 px: the RC charging pair lost 172 CSS px and the permittivity pair
+  107 px off the right edge of an internally scrollable box — half the formula was invisible with no
+  affordance. The full source stays as the `aria-label`, and a single equation is untouched.
+- **Units are rendered, not escaped.** A symbol's `unit` is authored as math (`$\text{N}\cdot\text{m}^2$`)
+  and goes through the same renderer, so a unit reads as a unit. KaTeX cannot typeset a raw `·`
+  (U+00B7) inside `\text{}` and paints `\cdotp` in the error colour instead; the build now fails on
+  that, because an unsupported character appears as a command painted as text (`>\\[a-zA-Z]+<`).
+
 ## Geometry and depth
 
 - Spacing scale: 4/8/12/18/28/44/68 px (`--space-1…7`); section rhythm uses 28–44 px, page padding 18 px.
@@ -127,6 +176,7 @@ rendered at build time, so formulas never reflow after paint and read correctly 
 
 | Component | Variants | Required states | Note |
 |---|---|---|---|
+| maker band | colophon (all pages) + quiet hero line | default, link hover/focus | name + domain + `@imdanialrashidi` → t.me; never grey legal text |
 | concept card | part hue, difficulty dots | hover lift, filtered hidden | filters use the `hidden` attribute |
 | formula card | compact (side index) / full | copy → "کپی شد ✓" → back | clipboard failure shows "کپی ناموفق" |
 | step (example) | closed / open / all-open | `details` + reveal-all + reset | works with JS disabled |
@@ -161,7 +211,8 @@ fallback, clipboard), success (copy, quiz score, "این مفهوم تمام ش�
 
 - Accessibility: WCAG 2.2 AA; keyboard path for search, quiz, steps, dialogs; 3 px focus ring.
 - Contrast: text ≥ 4.5:1, non-text ≥ 3:1 (values above are measured from the shipped tokens).
-- Performance: first-party JS ≤ 15 kB gzip per page entry plus lazily loaded chunks; CSS ≈ 16 kB gzip;
+- Performance: first-party JS ≤ 15 kB gzip per page entry plus lazily loaded chunks (measured 4.7 kB);
+  CSS target ≈ 18 kB gzip (measured 18.1 kB on 2026-10-24, 17.0 kB before the homepage/mobile slice);
   fonts only for glyphs actually used; no third-party runtime requests at all.
 - Target: LCP ≤ 2.5 s, INP ≤ 200 ms, CLS ≤ 0.1 on a mid-range phone over 4G (design budget, measured
   locally only — see the report).
@@ -194,6 +245,22 @@ fallback, clipboard), success (copy, quiz score, "این مفهوم تمام ش�
 | 2026-10-03 | Content authored as `.mjs` data, not Markdown-at-runtime | build-time coverage check is the real integrity guarantee | never |
 | 2026-10-03 | Field-ruler grid + charge ribbon as the two signatures | owner asked for "distinctive, not generic"; both are physics-derived, not decorative | if a third motif is introduced, retire one |
 | 2026-10-03 | §6.1 arithmetic slip in the notes shown as a marked correction | re-derived value 5.63×10⁷ N/C; the note's own line is inconsistent | if the owner prefers silent alignment with the note |
+| 2026-10-24 | **Owner**: the hero copy leads the figure on every stacked width (≤ 880 px), and the figure becomes a bounded plate | supersedes the old 880 px “figure first” rule. Measured on the built site: at 390×844 the figure rendered 296 CSS px tall *above* the h1 and the primary CTA's top edge landed at y ≈ 795 px; at 768×1024 the full-width canvas took 594 px and the CTA sat at y ≈ 995 px. Both first screens opened with a decorative vector field instead of the site's promise and its next action | if a phone-specific hero artwork is commissioned |
+| 2026-10-24 | **Owner**: creator identity as a product signature — maker band on every page, `@imdanialrashidi` → t.me | the identity existed only as the two smallest footer strings; the request asks for deliberate prominence without becoming a portfolio | if the owner later wants a real about page |
+
+### Agent-proposed refinements (2026-10-24, homepage + mobile) — new, not owner-approved
+
+| Area | Refinement | Why | Revisit when |
+|---|---|---|---|
+| Home hierarchy | One `شروع یادگیری` primary button; the two former secondary pills become one quiet text link, and the 4-number stat block becomes a single `hero-spec` line | the three-button row plus a 4-stat block read as a dashboard header, which is exactly what the brief asks to remove | never |
+| Home sections | Quick access becomes a notebook **index** (hairline rows, not four cards) and “چه فرقی با جزوه دارد” becomes a numbered margin list | four consecutive identical card rows (ladder 5 / start 4 / entry 4 / why 4) was the generic look the contract forbids; the copy is unchanged | if a sixth index section is ever added |
+| Next step | `[data-next-concept]` ships the first-concept card as its no-JS fallback and is replaced in place by the script | with scripting on, the section previously showed *two* differently-weighted cards: a fixed “first concept” and the real “next for you” | never |
+| Maker band | Colophon at the foot of the footer: `--paper-3` + field-ruler grid, dashed top edge, logo mark, name as a heading, domain and `@imdanialrashidi` as real links; a 44 px min height | reusing `.footer-made`/`.footer-domain` keeps the existing assertions meaningful, and a colophon reads as designed paper instead of legal text | if a second identity link is added |
+| Telegram mark | New `send` glyph in the existing hand-authored set, painted in the existing `--neg` blue | the site's own icon language, and no new hue enters the palette | never |
+| Phone composition | Ladder → vertical numbered sequence with a connecting rule; filter bar → search field on its own row; entry tiles → full-width rows; simulation read-outs → `align-items: start` | five stacked identical cards and a six-chip toolbar with a half-width search field are shrink artefacts, not phone designs | if a bottom-navigation pattern is adopted |
+| Touch floor | `.primary/secondary/ghost/tool-button` and `.chip` get `min-height: 44px` at ≤ 560 px (existing 40 px at ≤ 1024) | the brief asks for ≈ 44 px where practical; controls that change progress or answers are the ones that get it | never |
+| Hover | New/decorative hover effects are wrapped in `@media (hover: hover)` | a sticky hover state after a tap is a touch artefact, not feedback | never |
+| Headings | `text-wrap: balance` on `h1`–`h3` | the Persian h1 wrapped to a two-word second line on desktop; balancing is honoured where supported and ignored elsewhere | never |
 
 ### Agent-proposed refinements (2026-10-24) — new, not owner-approved
 

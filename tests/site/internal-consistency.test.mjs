@@ -72,6 +72,50 @@ test('the shipped progress total equals the registry, with or without JavaScript
   }
 });
 
+test('no built page nests a paragraph inside a paragraph', { skip }, () => {
+  // Defect class: the block prose renderer was injected inside a `<p>`, so the shipped markup was
+  // `<p class="wrong"><span class="mark">✕</span><p>…</p></p>`. That is invalid nesting, and the
+  // parser repairs it by closing the outer paragraph first: on the misconception cards the ✕/✓ mark
+  // rendered alone on its own 24 px row, the sentence on the next, plus an empty paragraph per block —
+  // on every concept page and the formula pages, worst on a phone. Reading the *built* HTML is the
+  // point: the invalid nesting is what shipped, and the browser hides it.
+  const nested = /<p(?: [^>]*)?>(?:(?!<\/p>)[\s\S])*?<p[\s>]/;
+  const pages = [
+    'index.html',
+    'formulas/index.html',
+    'lessons/part-1/index.html',
+    'lessons/part-5/index.html',
+    'map/index.html',
+    ...registry.concepts.map((concept) => `concept/${concept.id}/index.html`),
+  ];
+  const offenders = [];
+  for (const page of pages) {
+    if (nested.test(read(page))) offenders.push(page);
+  }
+  assert.deepEqual(offenders, [], `a <p> opens inside another <p> on: ${offenders.join(', ')}`);
+});
+
+test('a misconception keeps its mark and its sentence on one row', { skip }, () => {
+  // Defect class: the block prose renderer was injected inside a `<p>`, so the shipped markup was
+  // `<p class="wrong"><span class="mark">✕</span><p>…</p></p>`. The parser closed the outer paragraph
+  // first, which rendered the ✕ alone on its own 24 px row, the sentence on the next, and an extra
+  // empty paragraph per block — on every concept page, worst on a phone. This reads the built HTML,
+  // because that invalid nesting is what shipped.
+  let checked = 0;
+  for (const concept of registry.concepts) {
+    const html = read(`concept/${concept.id}/index.html`);
+    const rows = [...html.matchAll(/<p class="(?:wrong|right)">([^<]*)<span class="mark[^>]*>[^<]*<\/span>([\s\S]*?)<\/p>/g)];
+    for (const [, , rest] of rows) {
+      const text = rest.replace(/<[^>]*>/g, '').trim();
+      assert.ok(text.length > 0, `${concept.id}: a misconception row renders its mark with no sentence`);
+      checked += 1;
+    }
+    const orphan = html.match(/<p class="(?:wrong|right)">\s*<span class="mark[^>]*>[^<]*<\/span>\s*<\/p>/);
+    assert.equal(orphan, null, `${concept.id}: a misconception row is an orphaned mark — ${orphan?.[0]}`);
+  }
+  assert.ok(checked > 20, `only ${checked} misconception rows were inspected; the page set looks wrong`);
+});
+
 test('displayed aggregates are derived, not typed', { skip }, () => {
   const home = read('index.html');
   const formulas = home.match(/data-stat="formulas"[^>]*>([^<]*)</)?.[1];

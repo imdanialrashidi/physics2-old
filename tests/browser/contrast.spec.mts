@@ -19,7 +19,15 @@ const TARGETS: Record<string, { selector: string; page: string }> = {
   'footer note': { selector: '.footer-note', page: '/concept/coulomb/' },
   'table-of-contents link': { selector: '.toc a', page: '/concept/coulomb/' },
   'ladder step title': { selector: '.ladder-body strong', page: '/' },
-  'hero stat value': { selector: '.hero-stats dd', page: '/' },
+  'hero spec value': { selector: '.hero-spec b', page: '/' },
+  'hero alt link': { selector: '.hero-alt', page: '/' },
+  'hero maker line': { selector: '.hero-maker', page: '/' },
+  'index row title': { selector: '.index-body strong', page: '/' },
+  'index row note': { selector: '.index-body span', page: '/' },
+  'maker name': { selector: '.maker-band .footer-made', page: '/' },
+  'maker note': { selector: '.maker-note', page: '/' },
+  'maker domain link': { selector: '.maker-link-domain', page: '/' },
+  'maker telegram link': { selector: '.maker-link-telegram', page: '/' },
 };
 
 const measure = (selector: string) => {

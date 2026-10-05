@@ -177,7 +177,7 @@ export const concepts = [
           name: 'واحد میدان مغناطیسی',
           en: 'Unit of magnetic field',
           latex: String.raw`[B] = \text{T} \quad (\text{تِسلا})`,
-          symbols: [{ sym: String.raw`T`, meaning: 'تِسلا؛ یک تِسلا برابر است با نیوتن بر آمپر‌متر', unit: String.raw`$\text{T} = \text{N}/(\text{A·m})$` }],
+          symbols: [{ sym: String.raw`T`, meaning: 'تِسلا؛ یک تِسلا برابر است با نیوتن بر آمپر‌متر', unit: String.raw`$\text{T} = \text{N}/(\text{A}\cdot\text{m})$` }],
           interpretation: String.raw`شدت میدانی که به بار متحرک $1\,\text{C}$ با سرعت $1\,m/s$ نیروی $1\,N$ وارد می‌کند.`,
           whenToUse: String.raw`برای بررسی مرتبه‌ی بزرگی جواب‌ها (میدان زمین حدود $50\,\mu T$).`,
           whenNotToUse: String.raw`در محاسبه؛ این فقط یادآوری واحد است.`,
@@ -769,7 +769,7 @@ $$
           en: 'Magnetic moment',
           latex: String.raw`\mu = NIA`,
           symbols: [
-            { sym: String.raw`\mu`, meaning: 'گشتاور مغناطیسی', unit: String.raw`$\text{A·m}^2$` },
+            { sym: String.raw`\mu`, meaning: 'گشتاور مغناطیسی', unit: String.raw`$\text{A}\cdot\text{m}^2$` },
             { sym: String.raw`N`, meaning: 'تعداد دور', unit: 'بی‌بُعد' },
             { sym: String.raw`A`, meaning: 'مساحت حلقه', unit: String.raw`$\text{m}^2$` },
           ],
@@ -796,7 +796,7 @@ $$
             { label: 'گام ۲ — گشتاور', body: String.raw`$\tau = \mu B\sin30^\circ = 0.8\times0.4\times0.5 = 0.16\,N\cdot m$`},
             { label: 'گام ۳ — چک بیشینه', body: String.raw`در $90^\circ$ گشتاور $0.8\times0.4 = 0.32\,N\cdot m$ می‌شد (دو برابر).`},
           ],
-          answer: { latex: String.raw`\mu = 0.8\,\text{A·m}^2,\quad \tau = 0.16\,\text{N·m}`, body: String.raw`با زاویه‌ی $90^\circ$ گشتاور دو برابر می‌شد.`},
+          answer: { latex: String.raw`\mu = 0.8\,\text{A}\cdot\text{m}^2,\quad \tau = 0.16\,\text{N}\cdot\text{m}`, body: String.raw`با زاویه‌ی $90^\circ$ گشتاور دو برابر می‌شد.`},
         },
       ],
       misconceptions: [
@@ -843,7 +843,7 @@ $$
 
 دو نکته:
 
-۱. $\mu_0 = 4\pi\times10^{-7}\,\text{T·m/A}$ ثابت مغناطیسی خلأ است.
+۱. $\mu_0 = 4\pi\times10^{-7}\,\text{T}\cdot\text{m/A}$ ثابت مغناطیسی خلأ است.
 ۲. $\hat r$ بردار یکه‌ی فاصله است — همان نقشی که $1/r^2$ در قانون کولن دارد.
 
 این قانون به تو می‌گوید: میدان مغناطیسی از **جریان** می‌آید، نه از بار ساکن. همان‌طور که میدان الکتریکی از **بار** می‌آید.
@@ -861,7 +861,7 @@ $$
           en: 'Biot–Savart law',
           latex: String.raw`d\vec B = \frac{\mu_0}{4\pi}\frac{I\,d\vec l\times\hat r}{r^2}`,
           symbols: [
-            { sym: String.raw`\mu_0`, meaning: String.raw`ثابت مغناطیسی خلأ $=4\pi\times10^{-7}$`, unit: String.raw`$\text{T·m/A}$` },
+            { sym: String.raw`\mu_0`, meaning: String.raw`ثابت مغناطیسی خلأ $=4\pi\times10^{-7}$`, unit: String.raw`$\text{T}\cdot\text{m/A}$` },
             { sym: String.raw`d\vec l`, meaning: 'بردار المان جریان', unit: 'm' },
             { sym: String.raw`\hat r`, meaning: 'بردار یکه از المان به نقطه‌ی موردنظر', en: 'unit vector' },
           ],

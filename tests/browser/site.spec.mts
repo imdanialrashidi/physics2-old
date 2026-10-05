@@ -26,10 +26,80 @@ test('home renders the learning map and links into part 1', async ({ page }) => 
   await expect(page.locator('.footer-made')).toHaveText('ساخته شده توسط دانیال رشیدی');
   await expect(page.locator('.footer-domain')).toHaveText('imdanialrashidi.github.io');
 
-  await page.getByRole('link', { name: 'شروع از پارت اول' }).click();
+  await page.getByRole('link', { name: 'شروع یادگیری' }).click();
   await expect(page).toHaveURL(/lessons\/part-1\//);
   await expect(page.getByRole('heading', { level: 1 })).toContainText('بار الکتریکی و میدان الکتریکی');
   expect(consoleErrors).toEqual([]);
+});
+
+/**
+ * One obvious next action, and it must be visible before the phone has to scroll.
+ *
+ * The home page used to offer three same-weight buttons and put the 296 px hero figure *above* the
+ * title, so the only primary CTA started at y ≈ 795 px on a 390×844 screen. This pins the decision
+ * itself rather than the styling: exactly one primary control in the hero, named as the owner asked,
+ * and the whole promise — kicker, title, lede, button — inside the first screen.
+ */
+test('the home page offers one primary action, above the phone fold', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await open(page, '/');
+
+  const cta = page.locator('.hero-cta');
+  await expect(cta).toHaveCount(1);
+  await expect(cta).toHaveText('شروع یادگیری');
+  await expect(cta).toHaveAttribute('href', /lessons\/part-1\//);
+  // Nothing else in the hero may wear the primary treatment.
+  await expect(page.locator('.hero .primary-button')).toHaveCount(1);
+
+  const boxes = await page.evaluate(() => {
+    const box = (selector: string) => {
+      const node = document.querySelector(selector);
+      if (!node) return null;
+      const rect = node.getBoundingClientRect();
+      return { top: Math.round(rect.top), bottom: Math.round(rect.bottom) };
+    };
+    return {
+      kicker: box('.hero-kicker'),
+      title: box('.hero h1'),
+      lede: box('.hero-lede'),
+      cta: box('.hero-cta'),
+      figure: box('.hero-visual'),
+      viewport: window.innerHeight,
+    };
+  });
+  for (const part of ['kicker', 'title', 'lede', 'cta'] as const) {
+    expect(boxes[part], `hero ${part} missing`).not.toBeNull();
+    expect(boxes[part]!.bottom, `hero ${part} is below the fold`).toBeLessThanOrEqual(boxes.viewport);
+  }
+  // The copy leads the figure on a phone, so the first screen states the promise, not a picture.
+  expect(boxes.cta!.bottom).toBeLessThan(boxes.figure!.top);
+});
+
+/**
+ * The maker's band is a product signature, not legal text.
+ *
+ * It has to survive on every page, name the creator in words, and offer both identity links as real
+ * links — `@imdanialrashidi` to Telegram, which is an owner-stated requirement with no other source.
+ */
+test('the creator signature names the maker and links to Telegram on every page', async ({ page }) => {
+  for (const route of ['/', '/concept/coulomb/', '/formulas/']) {
+    await open(page, route);
+    const band = page.locator('.maker-band');
+    await expect(band).toBeVisible();
+    await expect(band.locator('.footer-made')).toHaveText('ساخته شده توسط دانیال رشیدی');
+    await expect(band.locator('.footer-domain')).toHaveText('imdanialrashidi.github.io');
+    await expect(band.locator('.footer-domain')).toHaveAttribute('href', 'https://imdanialrashidi.github.io');
+    const telegram = band.locator('.maker-link-telegram');
+    await expect(telegram).toHaveText('@imdanialrashidi');
+    await expect(telegram).toHaveAttribute('href', 'https://t.me/imdanialrashidi');
+    // Prominent, not a footnote: the name is real text in the band, and the links are thumb-sized.
+    const size = await band.locator('.footer-made').evaluate((node) => Number.parseFloat(getComputedStyle(node).fontSize));
+    expect(size, `maker name is ${size}px`).toBeGreaterThanOrEqual(15);
+    for (const link of await band.locator('.maker-link').all()) {
+      const box = await link.boundingBox();
+      expect(box!.height, 'maker link is not touchable').toBeGreaterThanOrEqual(44);
+    }
+  }
 });
 
 test('concept page teaches in layers and keeps a readable formula', async ({ page }) => {
@@ -246,14 +316,18 @@ test('the header stays compact and the navigation is never clipped on a phone', 
 test('every required width keeps controls thumb-sized and content unclipped', async ({ page }) => {
   for (const width of [...PHONE_WIDTHS, 768, 1024, 1360]) {
     await page.setViewportSize({ width, height: 800 });
-    for (const route of ['/', '/concept/electric-field/', '/sims/', '/map/']) {
+    // The lesson page joined this sweep because its concept titles were 27 px tall links on a phone:
+    // the sweep that found them did not visit it.
+    for (const route of ['/', '/concept/electric-field/', '/sims/', '/map/', '/lessons/part-1/']) {
       await open(page, route);
       // Touch gets the comfortable 32 px floor; a mouse-driven desktop only has to meet the
       // WCAG 2.2 AA target size of 24 px, which is what inline prose links are sized for.
       const floor = width <= 1024 ? 32 : 24;
       const report = await page.evaluate((minSize) => {
         const tooSmall: string[] = [];
-        for (const el of document.querySelectorAll<HTMLElement>('button, a[href], input[type="range"], select')) {
+        // `summary` is in the list because the text fallback of a figure and the final answer of a
+        // worked example are the controls a stuck learner reaches for, and both measured 28 px.
+        for (const el of document.querySelectorAll<HTMLElement>('button, a[href], input[type="range"], select, summary')) {
           // An element with no client rect is not laid out at all — it sits inside a collapsed
           // disclosure or the hidden rescue panel — so it cannot be tapped and must not be counted.
           if (el.getClientRects().length === 0) continue;

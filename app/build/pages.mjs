@@ -33,18 +33,18 @@ export function homePage(ctx) {
     <div class="hero-copy">
       <p class="hero-kicker">${glyph('bolt', 16)} یک کتاب تعاملی فارسی برای فیزیک ۲</p>
       <h1>فیزیک را <span class="hero-highlight">فهمیدنی</span> کن، نه حفظ کردنی</h1>
-      <p class="hero-lede">هر مفهوم از شهود شروع می‌شود، با یک تصویر یا شبیه‌سازی روشن می‌شود، بعد ریاضی‌اش را می‌آموزی، یک مثال را با هم حل می‌کنی و آخرش خودت امتحان می‌دهی. اگر جایی گیر کردی، دکمه‌ی نجات همیشه هست.</p>
+      <p class="hero-lede">هر مفهوم از شهود شروع می‌شود، با یک تصویر روشن می‌شود، بعد ریاضی‌اش را می‌آموزی، یک مثال را با هم حل می‌کنی و آخرش خودت امتحان می‌دهی.</p>
       <div class="hero-actions">
-        <a class="primary-button" href="${prefix}lessons/part-1/">شروع از پارت اول</a>
-        <a class="secondary-button" href="${prefix}concepts/">نمایه‌ی مفاهیم</a>
-        <a class="secondary-button" href="${prefix}practice/">تمرین سریع</a>
+        <a class="primary-button hero-cta" href="${prefix}lessons/part-1/">شروع یادگیری</a>
+        <a class="hero-alt" href="${prefix}concepts/">یا از نمایه‌ی مفاهیم شروع کن ←</a>
       </div>
-      <dl class="hero-stats">
-        <div><dt>مفهوم آموزشی</dt><dd data-stat="concepts">${toPersian(registry.concepts.length)}</dd></div>
-        <div><dt>فرمول با توضیح</dt><dd data-stat="formulas">${toPersian(registry.formulas.length)}</dd></div>
-        <div><dt>پرسش تمرینی</dt><dd data-stat="questions">${toPersian(registry.questions.length)}</dd></div>
-        <div><dt>زمان تخمینی کل</dt><dd>${toPersian(Math.round(totalMinutes / 60))} ساعت</dd></div>
-      </dl>
+      <ul class="hero-spec">
+        <li><b data-stat="concepts">${toPersian(registry.concepts.length)}</b> مفهوم آموزشی</li>
+        <li><b data-stat="formulas">${toPersian(registry.formulas.length)}</b> فرمول با توضیح</li>
+        <li><b data-stat="questions">${toPersian(registry.questions.length)}</b> پرسش تمرینی</li>
+        <li><b>${toPersian(Math.round(totalMinutes / 60))}</b> ساعت مطالعه</li>
+      </ul>
+      <p class="hero-maker">${SITE.author} · <a href="${SITE.telegramUrl}" rel="noopener">${SITE.telegram}</a></p>
     </div>
     <div class="hero-visual">
       <canvas class="hero-canvas" data-hero-canvas width="520" height="420" aria-hidden="true"></canvas>
@@ -86,40 +86,46 @@ export function homePage(ctx) {
     <h2 id="start-title">همین الان از کجا شروع کنم؟</h2>
     <p>پیشنهاد ما بر اساس پیشرفت تو در همین مرورگر است؛ اگر تازه شروع کرده‌ای، از پایه‌ای‌ترین مفهوم شروع کن.</p>
   </div>
-  <div class="start-grid">
-    ${conceptCard(firstConcept, prefix)}
-    <article class="start-card start-card-next" data-next-concept hidden></article>
-    <div data-recent-list class="start-grid-item"></div>
-    <article class="start-card start-card-weak">
-      <h3>${glyph('bolt', 18)} نقطه‌ی ضعف من</h3>
-      <p>ببین کدام مفهوم‌ها را کمتر بلدی و فقط همان‌ها را تمرین کن.</p>
-      <a class="inline-link" href="${prefix}practice/">رفتن به تمرین‌ها ←</a>
-    </article>
+  <div class="next-band">
+    <div class="next-primary" data-next-concept>${conceptCard(firstConcept, prefix)}</div>
+    <div class="next-side">
+      <article class="start-card start-card-weak">
+        <h3>${glyph('bolt', 18)} نقطه‌ی ضعف من</h3>
+        <p>ببین کدام مفهوم‌ها را کمتر بلدی و فقط همان‌ها را تمرین کن.</p>
+        <a class="inline-link" href="${prefix}practice/">رفتن به تمرین‌ها ←</a>
+      </article>
+      <div data-recent-list class="start-grid-item"></div>
+    </div>
   </div>
 </section>
 
 <section class="section" aria-labelledby="entry-title">
   <div class="section-head">
     <h2 id="entry-title">دسترسی سریع</h2>
+    <p>هر چیزی که در این سایت هست، از این فهرست وارد می‌شود.</p>
   </div>
-  <div class="entry-grid">
-    <a class="entry-tile" href="${prefix}formulas/"><span class="entry-icon">${glyph('bolt', 22)}</span><strong>دفترچه‌ی فرمول‌ها</strong><span>هر فرمول با واحد، تفسیر، کِی استفاده کنم و کِی نکنم.</span></a>
-    <a class="entry-tile" href="${prefix}map/"><span class="entry-icon">${glyph('ladder', 22)}</span><strong>نقشه‌ی پیش‌نیازها</strong><span>ببین برای هر مفهوم چه چیزی را باید اول بلد باشی.</span></a>
-    <a class="entry-tile" href="${prefix}concepts/"><span class="entry-icon">${glyph('sphere', 22)}</span><strong>نمایه‌ی مفاهیم</strong><span>جست‌وجو و فیلتر میان ${toPersian(registry.concepts.length)} مفهوم درس.</span></a>
-    <a class="entry-tile" href="${prefix}glossary/"><span class="entry-icon">${glyph('book', 22)}</span><strong>واژه‌نامه</strong><span>معنی اصطلاح‌های فارسی و انگلیسی در یک نگاه.</span></a>
-  </div>
+  <nav class="index-panel" aria-label="دسترسی سریع به بخش‌های سایت">
+    <ul class="index-list">
+      <li><a class="index-row" href="${prefix}formulas/"><span class="index-icon">${glyph('bolt', 22)}</span><span class="index-body"><strong>دفترچه‌ی فرمول‌ها</strong><span>هر فرمول با واحد، تفسیر، کِی استفاده کنم و کِی نکنم.</span></span></a></li>
+      <li><a class="index-row" href="${prefix}practice/"><span class="index-icon">${glyph('book', 22)}</span><span class="index-body"><strong>تمرین</strong><span>آزمون ترکیبی، تمرین هر پارت، یا فقط مفهوم‌هایی که ضعیف‌تری.</span></span></a></li>
+      <li><a class="index-row" href="${prefix}concepts/"><span class="index-icon">${glyph('sphere', 22)}</span><span class="index-body"><strong>نمایه‌ی مفاهیم</strong><span>جست‌وجو و فیلتر میان ${toPersian(registry.concepts.length)} مفهوم درس.</span></span></a></li>
+      <li><a class="index-row" href="${prefix}map/"><span class="index-icon">${glyph('ladder', 22)}</span><span class="index-body"><strong>نقشه‌ی پیش‌نیازها</strong><span>ببین برای هر مفهوم چه چیزی را باید اول بلد باشی.</span></span></a></li>
+      <li><a class="index-row" href="${prefix}glossary/"><span class="index-icon">${glyph('life', 22)}</span><span class="index-body"><strong>واژه‌نامه</strong><span>معنی اصطلاح‌های فارسی و انگلیسی در یک نگاه.</span></span></a></li>
+      <li><a class="index-row" href="${prefix}sims/"><span class="index-icon">${glyph('play', 22)}</span><span class="index-body"><strong>آزمایشگاه تعاملی</strong><span>هر شبیه‌سازی در یک صفحه، با کنترل‌های واقعی.</span></span></a></li>
+    </ul>
+  </nav>
 </section>
 
 <section class="section" aria-labelledby="why-title">
   <div class="section-head">
     <h2 id="why-title">این سایت چه فرقی با خواندن جزوه دارد؟</h2>
   </div>
-  <div class="why-grid">
-    <div class="why-item"><h3>هر مفهوم پنج لایه دارد</h3><p>شهود، تصویر، ریاضی، مثال حل‌شده و تمرین. اگر لایه‌ای را نفهمیدی، همان لایه را نگه می‌داری و بقیه لازم نیست.</p></div>
-    <div class="why-item"><h3>شبیه‌سازی واقعی، نه انیمیشن نمایشی</h3><p>هر کنترل، همان محاسبه‌ی فیزیک را عوض می‌کند: بار را کم و زیاد کن، میدان و نیرو و نمودار با هم به‌روز می‌شوند.</p></div>
-    <div class="why-item"><h3>جایی که گیر می‌کنی، راه نجات دارد</h3><p>دکمه‌ی «این قسمت رو نمی‌فهمم» تو را به پیش‌نیاز، توضیح ساده‌تر، تصویر و یک مثال کوچک می‌برد.</p></div>
-    <div class="why-item"><h3>پیشرفت و تمرین، روی همین دستگاه</h3><p>مفهوم‌های تمام‌شده، نشان‌کردن‌ها و نتیجه‌ی تمرین‌ها در مرورگر خودت ذخیره می‌شود؛ بدون حساب کاربری.</p></div>
-  </div>
+  <ol class="why-list">
+    <li class="why-item"><h3>هر مفهوم پنج لایه دارد</h3><p>شهود، تصویر، ریاضی، مثال حل‌شده و تمرین. اگر لایه‌ای را نفهمیدی، همان لایه را نگه می‌داری و بقیه لازم نیست.</p></li>
+    <li class="why-item"><h3>شبیه‌سازی واقعی، نه انیمیشن نمایشی</h3><p>هر کنترل، همان محاسبه‌ی فیزیک را عوض می‌کند: بار را کم و زیاد کن، میدان و نیرو و نمودار با هم به‌روز می‌شوند.</p></li>
+    <li class="why-item"><h3>جایی که گیر می‌کنی، راه نجات دارد</h3><p>دکمه‌ی «این قسمت رو نمی‌فهمم» تو را به پیش‌نیاز، توضیح ساده‌تر، تصویر و یک مثال کوچک می‌برد.</p></li>
+    <li class="why-item"><h3>پیشرفت و تمرین، روی همین دستگاه</h3><p>مفهوم‌های تمام‌شده، نشان‌کردن‌ها و نتیجه‌ی تمرین‌ها در مرورگر خودت ذخیره می‌شود؛ بدون حساب کاربری.</p></li>
+  </ol>
 </section>`;
 
   return layout({
@@ -178,7 +184,7 @@ export function partPage(ctx, part) {
 
   <section class="part-overview">
     <h2>این پارت چه چیزی را یاد می‌گیری؟</h2>
-    <p>${renderProse(partIntro(part.id))}</p>
+    ${renderProse(partIntro(part.id))}
     ${callout('source', 'از کجا آمده؟', `<p>این پارت از فایل <code>${escapeHtml(part.note)}</code> در جزوه‌ی درسی ساخته شده است. هر بخش، بخش متناظر جزوه را پوشش می‌دهد و افزوده‌های آموزشی با برچسب «تکمیلی» جدا شده‌اند.</p>`)}
   </section>
 
@@ -306,7 +312,7 @@ export function conceptPage(ctx, concept) {
 
       <section class="layer layer-math" id="math">
         <h2><span class="layer-tag">لایه‌ی ۳</span> حالا ریاضی</h2>
-        ${concept.mathNote ? callout('tip', 'قبل از فرمول', `<p>${renderProse(concept.mathNote)}</p>`) : ''}
+        ${concept.mathNote ? callout('tip', 'قبل از فرمول', renderProse(concept.mathNote)) : ''}
         ${concept.formulas.map((formula) => formulaCard(formula)).join('')}
       </section>
 
@@ -329,7 +335,7 @@ export function conceptPage(ctx, concept) {
         concept.supplements?.length
           ? `<section class="layer layer-supplement" id="supplement">
         <h2><span class="layer-tag layer-tag-supp">افزوده</span> تکمیلی</h2>
-        ${concept.supplements.map((item) => callout('supplement', item.title, `<p>${renderProse(item.body)}</p>`)).join('')}
+        ${concept.supplements.map((item) => callout('supplement', item.title, renderProse(item.body))).join('')}
       </section>`
           : ''
       }

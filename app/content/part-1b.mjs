@@ -55,7 +55,7 @@ $$
           latex: String.raw`F = k\,\frac{|q_1 q_2|}{r^2}`,
           symbols: [
             { sym: String.raw`F`, meaning: 'اندازه‌ی نیروی الکتریکی بین دو بار', unit: 'N (نیوتن)' },
-            { sym: String.raw`k`, meaning: String.raw`ثابت کولن $= 8.99\times10^{9}$`, unit: String.raw`$\text{N·m}^2/\text{C}^2$` },
+            { sym: String.raw`k`, meaning: String.raw`ثابت کولن $= 8.99\times10^{9}$`, unit: String.raw`$\text{N}\cdot\text{m}^2/\text{C}^2$` },
             { sym: String.raw`q_1, q_2`, meaning: 'بار الکتریکی دو جسم', unit: 'C' },
             { sym: String.raw`r`, meaning: 'فاصله‌ی مرکز تا مرکز دو بار', unit: 'm' },
           ],

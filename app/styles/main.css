@@ -63,6 +63,11 @@
   --shadow-2: 0 2px 0 rgba(25, 26, 46, 0.07), 0 8px 20px -16px rgba(25, 26, 46, 0.35);
   --shadow-3: 0 3px 0 rgba(25, 26, 46, 0.08), 0 18px 40px -26px rgba(25, 26, 46, 0.45);
 
+  /* graph-paper field ruler: the page grid, reused by every surface that repeats it */
+  --field-rule: linear-gradient(rgba(25, 26, 46, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(25, 26, 46, 0.045) 1px, transparent 1px);
+  --field-rule-size: 28px 28px;
+
   --font: 'Vazirmatn Variable', 'Vazirmatn', 'IRANSans', 'Segoe UI', Tahoma, system-ui, sans-serif;
   --font-math: 'KaTeX_Main', 'Times New Roman', serif;
 }
@@ -82,10 +87,8 @@ html {
 body {
   margin: 0;
   background-color: var(--paper);
-  background-image:
-    linear-gradient(rgba(25, 26, 46, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(25, 26, 46, 0.045) 1px, transparent 1px);
-  background-size: 28px 28px;
+  background-image: var(--field-rule);
+  background-size: var(--field-rule-size);
   color: var(--ink);
   font-family: var(--font);
   font-size: 17px;
@@ -102,6 +105,8 @@ h4 {
   line-height: 1.35;
   font-weight: 800;
   letter-spacing: -0.01em;
+  /* Persian headings wrap to a two-word orphan without this; honoured where supported, ignored elsewhere. */
+  text-wrap: balance;
 }
 
 h1 {
@@ -660,6 +665,12 @@ strong {
   border-bottom: 2px dotted currentColor;
 }
 
+/* Inside a grid card the anchor is a stretched item, so its dotted rule would read as a divider. */
+.start-card > .inline-link,
+.index-row .inline-link {
+  justify-self: start;
+}
+
 .inline-link:hover {
   border-bottom-style: solid;
 }
@@ -772,30 +783,76 @@ strong {
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-bottom: var(--space-5);
-}
-
-.hero-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  align-items: center;
   gap: var(--space-3);
-  margin: 0;
-  padding-top: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+/*
+ * The one primary action of the page.
+ *
+ * Wider and taller than every other control on purpose: it is the only thing a new learner has to
+ * decide about, so it has to be findable without reading the copy around it.
+ */
+.hero-cta {
+  padding: 13px 28px;
+  font-size: 1.04rem;
+  font-weight: 800;
+}
+
+/* The alternative route stays a link, not a button: two buttons would compete for the same decision. */
+.hero-alt {
+  font-size: 0.94rem;
+  font-weight: 700;
+  color: var(--ink-2);
+  text-decoration: none;
+  border-bottom: 2px dotted color-mix(in srgb, var(--ink-3) 60%, transparent);
+  padding: 4px 2px;
+}
+
+.hero-alt:hover {
+  color: var(--primary);
+  border-bottom-style: solid;
+}
+
+/* One quiet spec line instead of a four-number dashboard row. */
+.hero-spec {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px var(--space-4);
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) 0 0;
   border-top: 1.5px dashed var(--line-strong);
+  font-size: 0.92rem;
+  color: var(--ink-2);
 }
 
-.hero-stats dt {
-  font-size: 0.8rem;
-  color: var(--ink-3);
-  margin-bottom: 2px;
+.hero-spec li {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
 }
 
-.hero-stats dd {
-  margin: 0;
-  font-size: 1.5rem;
+.hero-spec b {
+  font-size: 1.06rem;
   font-weight: 900;
   color: var(--primary-ink);
+}
+
+/* The maker's name also closes the hero, one line above the fold line on a phone. */
+.hero-maker {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--ink-3);
+}
+
+.hero-maker a {
+  color: var(--primary-ink);
+  font-weight: 700;
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
 }
 
 .hero-visual {
@@ -815,6 +872,94 @@ strong {
   font-size: 0.85rem;
   color: var(--ink-3);
   margin-top: var(--space-2);
+  max-width: 46ch;
+}
+
+/* The maker's mark: a colophon on the field-ruler paper, not grey legal text. */
+.maker-band {
+  border-top: 1.5px dashed var(--line-strong);
+  background-color: var(--paper-3);
+  background-image: var(--field-rule);
+  background-size: var(--field-rule-size);
+}
+
+/* Mark, name and links on one ruled line: a colophon reads as a signature, not as a stack of notices. */
+.maker-inner {
+  max-width: var(--shell);
+  margin-inline: auto;
+  padding: var(--space-4) var(--space-4) var(--space-5);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+}
+
+.maker-mark svg {
+  display: block;
+}
+
+.maker-text {
+  min-width: 0;
+}
+
+.maker-note {
+  margin: 2px 0 0;
+  font-size: 0.9rem;
+  color: var(--ink-2);
+  max-width: 60ch;
+}
+
+.maker-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: flex-end;
+}
+
+.maker-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--paper-2);
+  border: 1.5px solid var(--line-strong);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.94rem;
+  text-decoration: none;
+  transition: transform 0.12s ease, border-color 0.12s ease, background-color 0.12s ease;
+}
+
+.maker-link span {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.maker-link-domain {
+  color: var(--primary-ink);
+}
+
+.maker-link-telegram {
+  color: var(--neg-ink);
+  border-color: color-mix(in srgb, var(--neg) 38%, var(--line-strong));
+}
+
+.maker-link-telegram svg {
+  color: var(--neg);
+}
+
+@media (hover: hover) {
+  .maker-link:hover {
+    background: var(--paper);
+    border-color: var(--ink-3);
+    transform: translateY(-1px);
+  }
+}
+
+.maker-link:active {
+  transform: translateY(1px);
 }
 
 /* ------------------------------------------------------------- sections */
@@ -917,13 +1062,40 @@ strong {
   color: var(--ink-3);
 }
 
-.start-grid,
-.entry-grid,
-.why-grid {
+.entry-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: var(--space-4);
   align-items: start;
+}
+
+/*
+ * The next step is the one thing the page must offer, so it gets the wider column and the weaker
+ * panels stack beside it instead of forming a four-card row of equal weight.
+ */
+.next-band {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.next-primary,
+.next-side {
+  display: grid;
+  gap: var(--space-4);
+  align-content: start;
+}
+
+.start-note {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--ink-2);
+}
+
+.start-note-title {
+  margin: 0 0 6px;
+  font-size: 1rem;
 }
 
 .concept-card {
@@ -1003,6 +1175,18 @@ strong {
   align-content: start;
 }
 
+/* The next-concept slot: the shipped concept card and the script's card share one silhouette. */
+.start-card-next {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--primary) 26%, var(--line));
+  background: color-mix(in srgb, var(--primary) 5%, var(--paper-2));
+  box-shadow: var(--shadow-2);
+}
+
+.start-card-next > * {
+  max-width: none;
+}
+
 .start-card p {
   margin: 0;
   font-size: 0.95rem;
@@ -1057,6 +1241,117 @@ strong {
   border-color: color-mix(in srgb, var(--primary) 32%, transparent);
 }
 
+/*
+ * Quick access as a notebook index.
+ *
+ * Six destinations read as one ruled list instead of six identical cards: the row itself is the tap
+ * target, the hairline is the only separator, and the icon marks the kind of page without adding a
+ * second column of chrome.
+ */
+.index-panel {
+  background: var(--paper-2);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-2);
+  overflow: hidden;
+}
+
+.index-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.index-list li + li {
+  border-inline-start: 1.5px solid var(--line);
+}
+
+.index-list li:nth-child(n + 3) {
+  border-top: 1.5px solid var(--line);
+}
+
+.index-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-3);
+  min-height: 72px;
+  padding: var(--space-4);
+  text-decoration: none;
+  color: var(--ink);
+  transition: background-color 0.14s ease;
+}
+
+.index-icon {
+  color: var(--primary-ink);
+  margin-top: 2px;
+}
+
+.index-body {
+  display: grid;
+  gap: 2px;
+}
+
+.index-body strong {
+  font-size: 1.02rem;
+}
+
+.index-body span {
+  font-size: 0.89rem;
+  color: var(--ink-2);
+  line-height: 1.6;
+}
+
+@media (hover: hover) {
+  .index-row:hover {
+    background: color-mix(in srgb, var(--primary) 6%, var(--paper-2));
+  }
+
+  .index-row:hover .index-body strong {
+    color: var(--primary-ink);
+  }
+}
+
+/* The four reasons, as a numbered margin note: content kept, card chrome gone. */
+.why-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-5);
+  counter-reset: why;
+}
+
+.why-item {
+  position: relative;
+  padding-inline-start: 40px;
+  padding-inline-end: var(--space-4);
+  border-inline-end: 1.5px solid var(--line-strong);
+}
+
+.why-item::before {
+  counter-increment: why;
+  /* Latin digits first, Persian numerals where the browser knows the style: no missing numeral. */
+  content: counter(why);
+  content: counter(why, persian);
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 0;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--paper-4);
+  border: 1.5px solid var(--line-strong);
+  color: var(--ink-2);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
 .why-item {
   padding: var(--space-4);
   border-radius: var(--radius);
@@ -1064,8 +1359,20 @@ strong {
   border: 1.5px solid var(--line);
 }
 
+/* The margin-note treatment replaces the card above: no surface, a hairline rule and a gutter disc. */
+.why-item {
+  position: relative;
+  padding: 0;
+  padding-inline-start: 40px;
+  border: 0;
+  border-inline-end: 1.5px solid var(--line-strong);
+  border-radius: 0;
+  background: none;
+}
+
 .why-item h3 {
   font-size: 1.02rem;
+  margin-bottom: 4px;
 }
 
 .why-item p {
@@ -1634,6 +1941,13 @@ strong {
   overflow-y: hidden;
   padding: 2px 0;
   direction: ltr;
+}
+
+/* Two equations joined by `\qquad` become two centred lines instead of one clipped line. */
+.math-stack {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: center;
 }
 
 .math-inline {
@@ -2516,6 +2830,9 @@ p {
   border-radius: 999px;
   overflow: hidden;
   background: var(--paper);
+  /* A wide figure's options used to run past the card edge and were cut off by `.sim`'s clipping. */
+  max-width: 100%;
+  flex-wrap: wrap;
 }
 
 .segment {
@@ -2632,9 +2949,9 @@ figcaption {
 .footer-inner {
   max-width: var(--shell);
   margin-inline: auto;
-  padding: var(--space-6) var(--space-4);
+  padding: var(--space-6) var(--space-4) var(--space-5);
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, auto);
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
   gap: var(--space-5);
   align-items: start;
 }
@@ -2673,24 +2990,16 @@ figcaption {
   text-decoration: underline;
 }
 
-.footer-signature {
-  text-align: start;
-  border-inline-start: 2px solid var(--line);
-  padding-inline-start: var(--space-4);
-}
-
 .footer-made {
   font-weight: 800;
   margin: 0;
   color: var(--ink);
+  font-size: 1.06rem;
 }
 
 .footer-domain {
-  font-size: 0.88rem;
-  color: var(--ink-3);
   direction: ltr;
   unicode-bidi: isolate;
-  display: inline-block;
 }
 
 /* ------------------------------------------------------------- responsive */
@@ -2704,18 +3013,6 @@ figcaption {
     position: static;
     order: 1;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  }
-
-  .footer-inner {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  }
-
-  .footer-signature {
-    grid-column: 1 / -1;
-    border-inline-start: 0;
-    padding-inline-start: 0;
-    border-top: 1.5px dashed var(--line-strong);
-    padding-top: var(--space-3);
   }
 }
 
@@ -2732,16 +3029,42 @@ figcaption {
   .inline-link,
   .map-part header .inline-link,
   .footer-links a,
-  .footer-domain,
+  .hero-maker a,
   .breadcrumbs a,
   .toc a,
-  .concept-side a {
+  .concept-side a,
+  .concept-row-body h3 a {
     min-height: 40px;
     display: inline-flex;
     align-items: center;
     padding-block: 6px;
     /* Short words such as «خانه» made a 25 px-wide target; the horizontal padding squares it off. */
     padding-inline: 6px;
+  }
+
+  /*
+   * Disclosure summaries are controls too: the text fallback of a figure and the «final answer» of a
+   * worked example were 28 px tall, so the two things a stuck learner reaches for sat below a
+   * comfortable tap on every phone.
+   */
+  summary {
+    min-height: 40px;
+  }
+
+  .sim-text summary,
+  .example-answer summary,
+  .quiz-explain summary,
+  .callout-details summary {
+    padding-block: 10px;
+  }
+
+  /*
+   * As a flex item the trailing «←» became its own anonymous block and wrapped onto a second line,
+   * which broke «رفتن به درس ←» into a phrase and a stranded arrow. These labels are one short phrase,
+   * so they stay on one line.
+   */
+  .inline-link {
+    white-space: nowrap;
   }
 
   .map-node-head a {
@@ -2776,8 +3099,36 @@ figcaption {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  /*
+   * Stacked hero: the copy leads and the figure follows as a bounded plate.
+   *
+   * Owner-directed reversal of the old 880 px "figure first" rule. Measured on the built site: at
+   * 390×844 the figure rendered ~296 px tall *above* the h1 and the primary CTA started at
+   * y ≈ 795 px, and at 768×1024 the full-width canvas took 594 px and put the CTA at y ≈ 995 px. Both
+   * first screens opened with a decorative vector field instead of the site's promise. The plate
+   * keeps its intrinsic 520×420 canvas so the drawn field is never stretched, and it stops growing at
+   * the size it was designed at.
+   */
+  .hero-copy {
+    order: 0;
+  }
+
   .hero-visual {
-    order: -1;
+    order: 1;
+    max-width: 520px;
+  }
+  .next-band {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .index-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .index-list li + li,
+  .index-list li:nth-child(n + 3) {
+    border-inline-start: 0;
+    border-top: 1.5px solid var(--line);
   }
 
   /*
@@ -2900,6 +3251,15 @@ figcaption {
     gap: 2px;
   }
 
+  /*
+   * A wrapped option group cannot keep the 999 px pill: the outer radius would clip the corners of the
+   * first and last segment of every row but the first. On the widths where wrapping happens the group
+   * gets the small radius instead.
+   */
+  .segmented {
+    border-radius: var(--radius-sm);
+  }
+
   .lesson-pager a {
     max-width: 100%;
   }
@@ -2910,10 +3270,6 @@ figcaption {
 
   .quiz {
     padding: var(--space-4);
-  }
-
-  .hero-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -2967,7 +3323,7 @@ figcaption {
   .search-trigger,
   .progress-trigger {
     padding: 8px 10px;
-    min-height: 40px;
+    min-height: 44px;
   }
 
   .header-inner {
@@ -2980,8 +3336,41 @@ figcaption {
   }
 
   .nav-link {
-    padding: 6px 10px;
+    padding: 8px 10px;
     font-size: 0.88rem;
+    min-height: 44px;
+  }
+
+  /*
+   * On the widest stacked layout (a phone) the plate follows the copy instead of competing with it.
+   * The order is already settled above 560 px; only the plate's own cap is phone-specific.
+   */
+  .hero-visual {
+    max-width: 80%;
+  }
+
+  .hero-cta {
+    width: 100%;
+    justify-content: center;
+    min-height: 48px;
+  }
+
+  .hero-actions {
+    gap: var(--space-2);
+  }
+
+  .hero-spec {
+    gap: 2px var(--space-3);
+    font-size: 0.88rem;
+  }
+
+  /* Controls that move the learner forward get the full thumb height on a phone. */
+  .primary-button,
+  .secondary-button,
+  .ghost-button,
+  .tool-button,
+  .chip {
+    min-height: 44px;
   }
 
   .concept-row {
@@ -2999,6 +3388,162 @@ figcaption {
 
   .footer-inner {
     grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+    padding-block: var(--space-5) var(--space-4);
+  }
+
+  /*
+   * The part ladder becomes a vertical numbered sequence instead of five stacked cards: the number
+   * moves into a gutter disc, a dashed rule joins consecutive steps, and the glyph returns to the
+   * text flow because a grid cell no longer gives it a corner of its own.
+   */
+  .ladder {
+    gap: var(--space-3);
+  }
+
+  .ladder-step {
+    position: relative;
+  }
+
+  .ladder-step + .ladder-step::before {
+    content: '';
+    position: absolute;
+    inset-block-start: -12px;
+    /* Centred under the number disc, so the rule reads as a connector and not as a stray mark. */
+    inset-inline-start: 25px;
+    width: 2px;
+    height: 12px;
+    background-image: linear-gradient(var(--line-strong) 0 3px, transparent 3px 7px);
+    background-size: 2px 7px;
+  }
+
+  .ladder-step a {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    padding: var(--space-3);
+    /* Room for the part glyph in the reading-end corner, so the title never runs under it. */
+    padding-inline-end: 48px;
+  }
+
+  .ladder-index {
+    grid-row: span 2;
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    font-size: 0.95rem;
+    border-radius: 50%;
+    background: var(--part-tint);
+    border: 1.5px solid color-mix(in srgb, var(--part-hue) 40%, transparent);
+  }
+
+  /* The glyph goes back to the corner: a full-width card finally has room for it there. */
+  .ladder-glyph {
+    position: absolute;
+    inset-inline-end: 14px;
+    inset-block-start: 12px;
+    opacity: 0.8;
+  }
+
+  /*
+   * Filter toolbars: the search field takes the whole first row and the part chips wrap under it.
+   * A six-chip flex row with a half-width field beside it was the shrunken-desktop layout this
+   * request asks to replace. The chips keep a content-sized flow instead of a fixed grid — a grid
+   * track would clip a long label such as «چالش‌برانگیز».
+   */
+  .filter-bar {
+    gap: var(--space-2);
+  }
+
+  .filter-bar .filter-input {
+    order: -1;
+    flex: 1 0 100%;
+    min-height: 44px;
+  }
+
+  /* Entry tiles (practice modes, 404 links) read as rows: icon beside the title, note underneath. */
+  .entry-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .entry-tile {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 4px var(--space-3);
+  }
+
+  .entry-tile .entry-icon {
+    grid-row: span 2;
+  }
+
+  .entry-tile > span:last-child {
+    grid-column: 2;
+  }
+
+  /* Symbol, meaning and unit read as two lines instead of three stacked fragments. */
+  .symbol-row {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 2px var(--space-3);
+  }
+
+  .symbol-sym {
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  .symbol-meaning {
+    grid-row: 1;
+    grid-column: 2;
+  }
+
+  .symbol-unit {
+    grid-row: 2;
+    grid-column: 1;
+  }
+
+  /* Read-outs stop stretching to the tallest cell in their row, which left dead paper on a phone. */
+  .sim-readouts {
+    align-items: start;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+
+  /* Inside a gallery tile a two-column read-out grid leaves a ragged hole beside the last value. */
+  .sim-tile .sim-readouts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sim {
+    padding: var(--space-3);
+  }
+
+  .map-part {
+    padding: var(--space-4);
+  }
+
+  .map-node {
+    padding: var(--space-3);
+  }
+
+  /* The maker's mark closes the page as two full-width rows rather than two pills side by side. */
+  .maker-inner {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: var(--space-4) var(--space-3) var(--space-5);
+  }
+
+  .maker-links {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+    justify-content: stretch;
+  }
+
+  .maker-link {
+    justify-content: flex-start;
+  }
+
+  .concept-tools .tool-button {
+    flex: 1 1 auto;
   }
 }
 
@@ -3226,6 +3771,7 @@ details.step[open] > div {
   }
 }
 
+/* The learner's recent trail fills this slot; a grid keeps the empty state and the list aligned. */
 .start-grid-item {
   display: grid;
 }
