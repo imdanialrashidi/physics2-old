@@ -276,6 +276,9 @@ test('no horizontal overflow at narrow width and math stays readable', async ({ 
 const PHONE_WIDTHS = [360, 390, 430];
 const ROUTES = ['/', '/concept/electric-field/', '/formulas/', '/practice/mixed/', '/sims/', '/map/', '/does-not-exist/'];
 
+/** Sub-pixel slack for the trigger sitting exactly on the header's inline-end padding edge. */
+const headerTolerance = 1;
+
 test('the header stays compact and the navigation is never clipped on a phone', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 760 });
   for (const route of ROUTES) {
@@ -313,14 +316,18 @@ test('the header stays compact and the navigation is never clipped on a phone', 
 test('every required width keeps controls thumb-sized and content unclipped', async ({ page }) => {
   for (const width of [...PHONE_WIDTHS, 768, 1024, 1360]) {
     await page.setViewportSize({ width, height: 800 });
-    for (const route of ['/', '/concept/electric-field/', '/sims/', '/map/']) {
+    // The lesson page joined this sweep because its concept titles were 27 px tall links on a phone:
+    // the sweep that found them did not visit it.
+    for (const route of ['/', '/concept/electric-field/', '/sims/', '/map/', '/lessons/part-1/']) {
       await open(page, route);
       // Touch gets the comfortable 32 px floor; a mouse-driven desktop only has to meet the
       // WCAG 2.2 AA target size of 24 px, which is what inline prose links are sized for.
       const floor = width <= 1024 ? 32 : 24;
       const report = await page.evaluate((minSize) => {
         const tooSmall: string[] = [];
-        for (const el of document.querySelectorAll<HTMLElement>('button, a[href], input[type="range"], select')) {
+        // `summary` is in the list because the text fallback of a figure and the final answer of a
+        // worked example are the controls a stuck learner reaches for, and both measured 28 px.
+        for (const el of document.querySelectorAll<HTMLElement>('button, a[href], input[type="range"], select, summary')) {
           // An element with no client rect is not laid out at all — it sits inside a collapsed
           // disclosure or the hidden rescue panel — so it cannot be tapped and must not be counted.
           if (el.getClientRects().length === 0) continue;
@@ -355,17 +362,48 @@ test('the navigation drawer opens, closes, navigates and returns focus', async (
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   await expect(panel).toBeHidden();
 
+  // The owner asked for the trigger at the inline end: in RTL that is the left, so it has to be the
+  // left-most item of the header row, sitting on the row's own edge, not merely the last one in the
+  // DOM with dead paper beyond it.
+  const row = await page.evaluate(() => {
+    const box = (selector: string) => document.querySelector(selector)!.getBoundingClientRect();
+    const inner = document.querySelector('.header-inner')!;
+    const style = getComputedStyle(inner);
+    return {
+      toggleLeft: box('[data-nav-toggle]').left,
+      toggleRight: box('[data-nav-toggle]').right,
+      brandLeft: box('.brand').left,
+      actionsLeft: box('.header-actions').left,
+      // Physical left edge of the row's content box: the inline end in RTL.
+      rowEnd: box('.header-inner').left + parseFloat(style.paddingLeft),
+    };
+  });
+  expect(row.toggleRight).toBeLessThanOrEqual(row.actionsLeft + headerTolerance);
+  expect(row.actionsLeft).toBeLessThanOrEqual(row.brandLeft + headerTolerance);
+  expect(Math.abs(row.toggleLeft - row.rowEnd)).toBeLessThanOrEqual(headerTolerance);
+
   // The current section is marked without relying on colour alone: aria-current plus a visible edge.
   await expect(panel.locator('[aria-current="page"]')).toHaveText('فرمول‌ها');
 
+  // Open and closed are named as well as drawn, so the state survives a monochrome screen.
+  await expect(toggle).toHaveAccessibleName('فهرست');
   await toggle.click();
   await expect(toggle).toHaveAttribute('aria-expanded', 'true');
   await expect(panel).toBeVisible();
+  await expect(toggle).toHaveAccessibleName('بستن');
+  await expect(toggle.locator('.nav-toggle-label')).toHaveText('بستن');
 
   // Escape closes it and puts focus back on the trigger, so keyboard users are not stranded.
   await page.keyboard.press('Escape');
   await expect(panel).toBeHidden();
+  await expect(toggle).toHaveAccessibleName('فهرست');
   expect(await toggle.evaluate((node) => node === document.activeElement)).toBe(true);
+
+  // Tapping the page closes it too, and leaves focus on whatever was tapped.
+  await toggle.click();
+  await expect(panel).toBeVisible();
+  await page.locator('h1').click();
+  await expect(panel).toBeHidden();
 
   // Choosing a destination both navigates and closes the panel.
   await toggle.click();

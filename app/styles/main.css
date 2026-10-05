@@ -260,12 +260,19 @@ strong {
  * Hidden on desktop and, crucially, while JavaScript is unavailable: without the script there is
  * nothing to open, so the trigger must not appear at all and the nav keeps its plain stacked form.
  * That keeps the page fully usable with scripting off, as `docs/ARCHITECTURE.md` requires.
+ *
+ * It is the last item of the header row, so it lands on the inline end — the left in RTL — at the
+ * owner's request, and it sits immediately before the panel in the DOM, which keeps the keyboard
+ * order the same as the reading order.
  */
 .nav-toggle {
+  order: 4;
   display: none;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 7px;
   min-height: 40px;
+  min-width: 40px;
   padding: 6px 12px;
   border-radius: 999px;
   border: 1.5px solid var(--line-strong);
@@ -281,12 +288,40 @@ strong {
   background: var(--paper-3, var(--paper));
 }
 
+/*
+ * Open state. The glyph, the word and the surface all change, so the state survives a monochrome
+ * screen and a learner who never learns the icon.
+ */
+.nav-toggle[aria-expanded='true'] {
+  background: var(--paper-3);
+  border-color: var(--primary-ink);
+  color: var(--primary-ink);
+}
+
 .nav-toggle-label {
   font-weight: 700;
 }
 
 .nav-toggle svg {
   flex: none;
+}
+
+/* Field lines become a cross over 140 ms — the same restrained state change as every other control. */
+.nav-glyph-list,
+.nav-glyph-close {
+  transition: opacity 0.14s ease;
+}
+
+.nav-glyph-close {
+  opacity: 0;
+}
+
+.nav-toggle[aria-expanded='true'] .nav-glyph-list {
+  opacity: 0;
+}
+
+.nav-toggle[aria-expanded='true'] .nav-glyph-close {
+  opacity: 1;
 }
 
 .nav-link {
@@ -3055,54 +3090,6 @@ figcaption {
   }
 }
 
-@media (max-width: 1024px) {
-  /*
-   * Touch targets.
-   *
-   * Phones and tablets are both touched, so the floor runs to 1024 px rather than stopping where the
-   * header changes layout. These links were 22–24 px tall — below a comfortable tap, and on the study
-   * map a near-miss silently follows the wrong prerequisite chain.
-   */
-  .map-node-head a,
-  .chain-prereq,
-  .inline-link,
-  .map-part header .inline-link,
-  .footer-links a,
-  .footer-domain,
-  .breadcrumbs a,
-  .toc a,
-  .concept-side a {
-    min-height: 40px;
-    display: inline-flex;
-    align-items: center;
-    padding-block: 6px;
-    /* Short words such as «خانه» made a 25 px-wide target; the horizontal padding squares it off. */
-    padding-inline: 6px;
-  }
-
-  .map-node-head a {
-    font-size: 1rem;
-  }
-
-  .chain-prereq {
-    padding-inline: 2px;
-  }
-
-  /* Formula copy buttons and segment controls follow the same floor. */
-  .copy-button,
-  .sim-controls .segment,
-  .sim-controls .ghost-button {
-    min-height: 40px;
-  }
-
-  /* Range inputs get a full-width, thumb-sized track. */
-  .sim-control input[type='range'] {
-    width: 100%;
-    min-height: 32px;
-    margin-block: 4px;
-  }
-}
-
 @media (max-width: 880px) {
   body {
     font-size: 16px;
@@ -3177,27 +3164,7 @@ figcaption {
     display: inline-flex;
   }
 
-  /*
-   * Phone header.
-   *
-   * The nav used to become a second, horizontally scrolling row under the brand. On a 360 px phone
-   * that row is 101 px taller than its container — it permanently cost 14% of the viewport, and the
-   * last links (واژه‌نامه) sat off-screen with no affordance. Instead the header stays one row and the
-   * nav becomes a panel that opens *underneath* it: reachable with one thumb, nothing clipped, and the
-   * current section stays visible without opening anything.
-   */
-  .header-inner {
-    gap: var(--space-2);
-    padding: 8px var(--space-3);
-    flex-wrap: nowrap;
-  }
-
-  .js .nav-toggle {
-    display: inline-flex;
-  }
-
   .site-nav {
-    order: 4;
     width: 100%;
     margin-inline-start: 0;
     flex-direction: column;
@@ -3221,6 +3188,25 @@ figcaption {
     flex-wrap: wrap;
   }
 
+  /*
+   * Open, the links are not a stretched list under the bar: they are a sheet of the same notebook,
+   * lifted off the header with the site's own paper shadow. It scrolls internally on a short screen
+   * so a landscape phone never gets a header taller than the page.
+   */
+  .js .site-nav:not([hidden]) {
+    background: var(--paper-2);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-2);
+    padding: 6px;
+    margin-block-start: var(--space-2);
+    max-height: calc(100vh - 84px);
+    max-height: calc(100dvh - 84px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    animation: paper-reveal 0.16s ease-out;
+  }
+
   .nav-link {
     position: relative;
     white-space: nowrap;
@@ -3230,10 +3216,24 @@ figcaption {
     padding: 8px 12px;
   }
 
-  /* The active section is marked by an edge as well as colour, never colour alone. */
+  /*
+   * The current section is marked by a bar as well as by colour, never colour alone. The bar is its
+   * own element on the reading-start edge: as an inset shadow it was clipped by the pill's round
+   * ends into a crescent floating beside the row rather than a clean edge on it.
+   */
   .nav-link.is-active {
     font-weight: 800;
-    box-shadow: inset 3px 0 0 var(--primary);
+    background: var(--paper-3);
+  }
+
+  .nav-link.is-active::before {
+    content: '';
+    position: absolute;
+    inset-block: 10px;
+    inset-inline-start: 0;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--primary);
   }
 
   .lesson-head {
@@ -3316,12 +3316,14 @@ figcaption {
 
   .nav-toggle {
     padding: 6px 10px;
+    min-width: 44px;
+    min-height: 44px;
   }
 
   .search-trigger,
   .progress-trigger {
     padding: 8px 10px;
-    min-height: 40px;
+    min-height: 44px;
   }
 
   .header-inner {
@@ -3543,100 +3545,6 @@ figcaption {
   .concept-tools .tool-button {
     flex: 1 1 auto;
   }
-}
-
-/* --------------------------------------------------- interaction & states */
-
-/**
- * Restrained micro-interactions.
- *
- * Every rule here is a `transform`, `opacity` or colour change in the 90–160 ms range — nothing
- * animates layout, so nothing reflows under the learner's finger. The whole block is neutralised by
- * the `prefers-reduced-motion` rule below, and each effect is skipped rather than merely shortened
- * when motion is reduced.
- *
- * Press feedback is deliberately small (1 px): enough to confirm a tap landed, not enough to read as
- * a toy. No element animates on scroll or on load.
- */
-button,
-[role='button'],
-summary,
-input[type='range'] {
-  -webkit-tap-highlight-color: transparent;
-}
-
-button,
-[role='button'] {
-  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease, border-color 0.12s ease;
-}
-
-button:active,
-[role='button']:active {
-  transform: translateY(1px);
-}
-
-.primary-button:active,
-.secondary-button:active {
-  transform: translateY(1px) scale(0.995);
-}
-
-/* Segmented controls read as a physical switch: the chosen edge follows the press. */
-.segment {
-  transition: background-color 0.12s ease, color 0.12s ease, transform 0.12s ease;
-}
-
-.segment:active {
-  transform: scale(0.97);
-}
-
-/*
- * Disabled controls.
- *
- * Without this a disabled button is indistinguishable from an enabled one, and the only signal is a
- * dead click. Dimming plus the `not-allowed` cursor plus the browser's own disabled semantics make
- * the state legible before the learner tries.
- */
-button:disabled,
-[aria-disabled='true'] {
-  opacity: 0.45;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* Revealing a worked step or an explanation should feel like paper unfolding, not a pop-in. */
-details[open] > summary {
-  color: var(--primary-ink);
-}
-
-details.quiz-explain[open] > div,
-details.sim-text[open] > div,
-details.step[open] > div {
-  animation: paper-reveal 0.16s ease-out;
-}
-
-@keyframes paper-reveal {
-  from {
-    opacity: 0;
-    transform: translateY(-3px);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-/* Completed state: the charge ribbon fills, and the button says so in words as well as colour. */
-.concept-done[aria-pressed='true'] {
-  background: color-mix(in srgb, var(--success-ink) 14%, var(--paper-2));
-  border-color: var(--success-ink);
-  color: var(--success-ink);
-}
-
-/* The progress trigger should acknowledge being pressed. */
-.progress-trigger:active,
-.search-trigger:active {
-  transform: translateY(1px);
 }
 
 /* --------------------------------------------------- interaction & states */

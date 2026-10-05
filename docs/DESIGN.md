@@ -245,6 +245,22 @@ fallback, clipboard), success (copy, quiz score, "این مفهوم تمام ش�
 | 2026-10-03 | Content authored as `.mjs` data, not Markdown-at-runtime | build-time coverage check is the real integrity guarantee | never |
 | 2026-10-03 | Field-ruler grid + charge ribbon as the two signatures | owner asked for "distinctive, not generic"; both are physics-derived, not decorative | if a third motif is introduced, retire one |
 | 2026-10-03 | §6.1 arithmetic slip in the notes shown as a marked correction | re-derived value 5.63×10⁷ N/C; the note's own line is inconsistent | if the owner prefers silent alignment with the note |
+| 2026-10-24 | **Owner**: the hero copy leads the figure on every stacked width (≤ 880 px), and the figure becomes a bounded plate | supersedes the old 880 px “figure first” rule. Measured on the built site: at 390×844 the figure rendered 296 CSS px tall *above* the h1 and the primary CTA's top edge landed at y ≈ 795 px; at 768×1024 the full-width canvas took 594 px and the CTA sat at y ≈ 995 px. Both first screens opened with a decorative vector field instead of the site's promise and its next action | if a phone-specific hero artwork is commissioned |
+| 2026-10-24 | **Owner**: creator identity as a product signature — maker band on every page, `@imdanialrashidi` → t.me | the identity existed only as the two smallest footer strings; the request asks for deliberate prominence without becoming a portfolio | if the owner later wants a real about page |
+
+### Agent-proposed refinements (2026-10-24, homepage + mobile) — new, not owner-approved
+
+| Area | Refinement | Why | Revisit when |
+|---|---|---|---|
+| Home hierarchy | One `شروع یادگیری` primary button; the two former secondary pills become one quiet text link, and the 4-number stat block becomes a single `hero-spec` line | the three-button row plus a 4-stat block read as a dashboard header, which is exactly what the brief asks to remove | never |
+| Home sections | Quick access becomes a notebook **index** (hairline rows, not four cards) and “چه فرقی با جزوه دارد” becomes a numbered margin list | four consecutive identical card rows (ladder 5 / start 4 / entry 4 / why 4) was the generic look the contract forbids; the copy is unchanged | if a sixth index section is ever added |
+| Next step | `[data-next-concept]` ships the first-concept card as its no-JS fallback and is replaced in place by the script | with scripting on, the section previously showed *two* differently-weighted cards: a fixed “first concept” and the real “next for you” | never |
+| Maker band | Colophon at the foot of the footer: `--paper-3` + field-ruler grid, dashed top edge, logo mark, name as a heading, domain and `@imdanialrashidi` as real links; a 44 px min height | reusing `.footer-made`/`.footer-domain` keeps the existing assertions meaningful, and a colophon reads as designed paper instead of legal text | if a second identity link is added |
+| Telegram mark | New `send` glyph in the existing hand-authored set, painted in the existing `--neg` blue | the site's own icon language, and no new hue enters the palette | never |
+| Phone composition | Ladder → vertical numbered sequence with a connecting rule; filter bar → search field on its own row; entry tiles → full-width rows; simulation read-outs → `align-items: start` | five stacked identical cards and a six-chip toolbar with a half-width search field are shrink artefacts, not phone designs | if a bottom-navigation pattern is adopted |
+| Touch floor | `.primary/secondary/ghost/tool-button` and `.chip` get `min-height: 44px` at ≤ 560 px (existing 40 px at ≤ 1024) | the brief asks for ≈ 44 px where practical; controls that change progress or answers are the ones that get it | never |
+| Hover | New/decorative hover effects are wrapped in `@media (hover: hover)` | a sticky hover state after a tap is a touch artefact, not feedback | never |
+| Headings | `text-wrap: balance` on `h1`–`h3` | the Persian h1 wrapped to a two-word second line on desktop; balancing is honoured where supported and ignored elsewhere | never |
 
 ### Agent-proposed refinements (2026-10-24) — new, not owner-approved
 
@@ -261,3 +277,19 @@ interaction*, not the visual idea.
 | Reduced motion | Effects are *removed*, not shortened, under `prefers-reduced-motion` | a 1 ms transform is still a 1 px jump | never |
 | Copy button | `.is-copied` / `.is-failed` states carried by glyph + wording as well as colour | the previous confirmation was text-only with no visual state | never |
 | Simulations | One authoritative `resetControl` per figure (shared, DOM-driven) | 12 of 14 figures had no way back to their starting state | never |
+
+### Agent-proposed refinements (2026-10-04, phone menu trigger) — new, not owner-approved
+
+Raised by the owner's «بهترش بکن» on the menu button. Placement is the owner's; everything else here is
+mine and can be reverted independently. Measured numbers come from the built site in Chromium.
+
+| Area | Refinement | Why | Revisit when |
+|---|---|---|---|
+| Header → placement (**owner**) | The trigger is the last child of `.header-inner`, and `.header-actions` takes `margin-inline-start: auto`, so the trigger sits on the row's inline-end edge — the left in RTL — with the search and progress pills grouped beside it | asked for. Measured before: the trigger was the first child, i.e. the right edge. Being *last* is not enough: with the free space left over, it floated in front of dead paper. Now `toggle.left == row content edge` at 360, 390, 560, 700, 820 and 880 px | if the site ever ships an LTR mirror |
+| Glyph | Field lines with a double-headed axis between them — the part-badge field motif at menu scale — swapping to a `×` when open | arrowheads on all three lines were rendered and rejected on inspection: at 20 px they collapsed into a blob. One axis stays a legible three-line menu and is this product's own motif | if a third menu-shaped control appears |
+| Open/closed wording | The label swaps «فهرست» ↔ «بستن», and `aria-label` always equals the visible word | below 560 px the label is hidden, so the state would otherwise live in a shape and a colour alone; DESIGN already forbids colour-only state | never |
+| Open state surface | `--paper-3` fill with a `--primary-ink` border and ink, 140 ms cross-fade on the glyph | matches the paper language of the sheet it opens; measured 10.79:1 for the open label | never |
+| Panel | The open nav is a lifted sheet — `--paper-2`, 1.5 px `--line`, `--radius`, `--shadow-2`, internal scroll, `paper-reveal` — not six pills on the bar's own colour | the old panel was visually indistinguishable from the header background, the generic look DESIGN's anti-template rule forbids | if the panel ever becomes a full-screen drawer |
+| Composition → 561–880 px | The sheet leaves the flow and hangs from the trigger, anchored to its inline-end edge, max 320 px wide | measured: the push-down sheet cost a tablet 377 px of header — 42 % of a 900 px viewport — to list six words. The header now stays 60 px. Below 561 px it still pushes, which is the thumb-reachable pattern DESIGN accepted for phones | if a tablet-specific nav is designed |
+| Current-section marker | A 3 px bar element on the row's reading-start edge plus the `--paper-3` fill, never colour alone | as an inset shadow the marker was clipped by the pill's 999 px radius into a crescent floating beside the row instead of an edge on it | never |
+| Tap outside | A `pointerdown` outside the header closes the sheet and leaves focus where the learner put it | on a tablet the sheet floats over content, so a stray tap would otherwise leave a sheet hanging over the page | never |
