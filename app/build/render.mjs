@@ -121,10 +121,16 @@ ${assets.css ? `<link rel="stylesheet" href="${assets.css}">` : ''}
 <a class="skip-link" href="#main">پرش به محتوای اصلی</a>
 <header class="site-header">
   <div class="header-inner">
+    <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="site-nav-panel">
+      <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path d="M3 5.5h14M3 10h14M3 14.5h14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+      <span class="nav-toggle-label">فهرست</span>
+      <span class="sr-only">باز و بسته کردن فهرست</span>
+    </button>
     <a class="brand" href="${prefix}index.html">
       ${logoMark()}
       <span class="brand-text"><strong>فیزیک ۲</strong><span>یادگیری تعاملی</span></span>
     </a>
+    <nav class="site-nav" id="site-nav-panel" aria-label="ناوبری اصلی">${nav}</nav>
     <div class="header-actions">
       <button class="search-trigger" type="button" data-search-open aria-label="جست‌وجو در درس‌ها">
         <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m12.8 12.8 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
